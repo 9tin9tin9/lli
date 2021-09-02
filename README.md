@@ -56,21 +56,19 @@ or left:{Num, Idx, Var}, right:{Num, Idx, Var}  # ||
 not bool:{Num, Idx, Var}  # !
 
 # control flow
-cnd true:{Sym}, false:{Sym}  # tests [0] and jump to true_label or false_label. can accept _ as placeholder
+skp idx:{Num, Idx, Var} # tests idx and skips a line if true
 jmp lbl:{Sym}  # unconditional jump
 lbl lbl:{Sym}  # set label. Label of same name stack up
-unset lbl:{Sym}  # unset label. Pop label from Label stack of 
-skp  # tests [0] and skips a line if true
 
 # IO
-read fd:{Num, Idx, Var}, des:{Idx, Var}, size:{Num, Idx, Var}
-write fd:{Num, Idx, Var}, src:{Idx, Var, Ltl}, size:{Num, Idx, Var}
+in fd:{Num, Idx, Var}, des:{Idx, Var}, size:{Num, Idx, Var}
+out fd:{Num, Idx, Var}, src:{Idx, Var, Ltl}, size:{Num, Idx, Var}
 
 # extern
-source script_name:{Ltl}  # source another file. creates a sparate memory map
-extern lib:{Ltl}  # calls dlopen. [0] stores CPtr to handle or Num<0 when failure. [1] set to start of Null-ended error msg. Msg length < 999
-close handle:{Idx, Var}  # closes handle
-call handle:{Idx, Var} sym:{Ltl}  # call sym from handle. Error handling same as etn
+src script_name:{Ltl}  # source another file. creates a sparate memory map
+ext lib:{Ltl}  # calls dlopen. [0] stores CPtr to handle or Num<0 when failure. [1] set to start of Null-ended error msg. Msg length < 999
+cls handle:{Idx, Var}  # closes handle
+cal handle:{Idx, Var} sym:{Ltl}  # call sym from handle. Error handling same as etn
 ```
 
 ## TODO

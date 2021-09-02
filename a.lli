@@ -1,4 +1,12 @@
-var:A,[1]
-lbl:Here
-add:$A,1
-jmp:Here
+skp:1
+jmp:false
+jmp:true
+
+lbl:true
+mov:[0],10
+jmp:end
+
+lbl:false
+mov:[0],-10
+
+lbl:end

@@ -22,6 +22,9 @@ impl Code{
     pub fn at(&self, i: usize) -> Option<&Vec<Tok>>{
         self.code.get(i)
     }
+    pub fn last(&self) -> Option<&Vec<Tok>>{
+        self.code.last()
+    }
     pub fn curr(&self) -> Option<&Vec<Tok>>{
         self.at(self.ptr)
     }

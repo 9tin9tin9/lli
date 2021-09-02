@@ -9,20 +9,25 @@ pub enum Signal{
     None,
     SetLbl(String),
     Jmp(usize),
+    Skp,
 }
 
 impl Signal{
     pub fn respond(&self, m: &mut Mem, code: &mut Code) -> Result<(), Error>{
         match *self {
-            Signal::None => 
-                code.ptr_incr(),
-            Signal::Jmp(idx) =>
-                code.ptr_set(idx),
+            Signal::None => (),
+            Signal::Jmp(idx) =>{
+                code.ptr_set(idx);
+                return Ok(());
+            },
             Signal::SetLbl(ref label) => {
                 m.label_add(label.to_owned(), code.ptr()+1);
+            },
+            Signal::Skp => {
                 code.ptr_incr();
             },
         };
+        code.ptr_incr();
         Ok(())
     }
 }
@@ -82,9 +87,23 @@ lazy_static! {
 
         add_entry!(h, flow, jmp);
         add_entry!(h, flow, lbl);
-        add_entry!(h, flow, cnd);
+        add_entry!(h, flow, skp);
         h
     };
+}
+
+pub fn preload_label(v: &[Tok], m: &mut Mem, c: &Code) -> Result<(), Error>{
+    if let Tok::Sym(ref n) = v[0] {
+        if n == "lbl" {
+            m.label_add(
+                v[1].get_sym()?
+                    .to_owned(), 
+                c.len());
+        };
+        Ok(())
+    }else{
+        Err(Error::WrongTokTypeForOp(v[0].to_type_str()))
+    }
 }
 
 pub fn exec(m: &mut Mem, c: &Code) -> Result<Signal, Error>{
@@ -94,7 +113,7 @@ pub fn exec(m: &mut Mem, c: &Code) -> Result<Signal, Error>{
     }
     
     if let Tok::Sym(ref n) = &v[0] {
-        let name : &str = n;
+        let name: &str = n;
         match OP_TABLE.get(name) {
             Some(f) =>
                 f(&v[1..], m),

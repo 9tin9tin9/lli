@@ -15,17 +15,14 @@ pub fn lbl(v: &[Tok], _: &mut Mem) -> Result<Signal, Error>{
     Ok(Signal::SetLbl(label.to_owned()))
 }
 
-pub fn cnd(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
-    argc_guard!{v, 2};
-    let true_label = v[0].get_sym()?;
-    let false_label = v[1].get_sym()?;
-    let is_true = m.mem_at(0)? == 0.0;
-    let loc = m.label_find(if is_true {
-        &true_label
-    }else {
-        &false_label
-    })?;
-    Ok(Signal::Jmp(loc))
+pub fn skp(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
+    argc_guard!(v, 1);
+    let is_true = v[0].get_value(&m)? != 0.0;
+    if is_true {
+        Ok(Signal::Skp)
+    }else{
+        Ok(Signal::None)
+    }
 }
 
 #[cfg(test)]

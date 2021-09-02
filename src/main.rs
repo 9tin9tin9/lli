@@ -23,24 +23,27 @@ fn main() {
     for line in lines {
         match line {
             Ok(s) => {
+                if s.chars().all(|c| c.is_ascii_whitespace()){
+                    continue;
+                }
                 let t = lex::tokenize(&s).unwrap();
                 code.push(t);
+                op::preload_label(
+                    code.last().unwrap(), 
+                    &mut m,
+                    &code
+                    ).unwrap()
             },
             Err(e) => panic!("{}", e),
         };
     }
-    let mut i = 0;
     loop {
-        if code.ptr() == code.len() {
+        if code.ptr() >= code.len() {
             break;
         }
         op::exec(&mut m, &code)
             .unwrap()
             .respond(&mut m, &mut code).unwrap();
-        println!("{}", m.mem_at(0).unwrap());
-        if i == 10000 {
-            break;
-        }
-        i += 1;
     };
+    println!("{}", m.mem_at(0).unwrap());
 }
