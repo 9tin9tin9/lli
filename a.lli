@@ -1,0 +1,3 @@
+lbl:Here
+add:[0],1
+jmp:Here

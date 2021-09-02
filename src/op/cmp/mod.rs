@@ -1,0 +1,46 @@
+use crate::mem::Mem;
+use crate::lex::Tok;
+use super::*;
+
+fn parse_arg(v: &[Tok], m: &Mem) -> Result<(f64, f64), Error>{
+    argc_guard!(v, 2);
+    let mut a = [0.0; 2];
+    for i in 0..2 {
+        a[i] = v[i].get_value(m)?;
+    }
+    Ok((a[0], a[1]))
+}
+
+macro_rules! cmp {
+    ( $o:tt, $v:expr, $m:expr ) => {
+        {
+            let (left, right) = parse_arg($v, $m)?;
+            let result = if (left $o right) {
+                1.0
+            }else {
+                0.0
+            };
+            $m.mem_set(0, result).unwrap();
+            return Ok(Signal::None)
+        }
+    }
+}
+
+pub fn eq(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
+    cmp!(==, v, m)
+}
+
+pub fn ne(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
+    cmp!(!=, v, m)
+}
+
+pub fn gt(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
+    cmp!(>, v, m)
+}
+
+pub fn lt(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
+    cmp!(<, v, m)
+}
+
+#[cfg(test)]
+mod test;
