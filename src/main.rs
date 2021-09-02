@@ -28,11 +28,7 @@ fn main() {
                 }
                 let t = lex::tokenize(&s).unwrap();
                 code.push(t);
-                op::preload_label(
-                    code.last().unwrap(), 
-                    &mut m,
-                    &code
-                    ).unwrap()
+                op::preload_label(&mut m, &code).unwrap()
             },
             Err(e) => panic!("{}", e),
         };

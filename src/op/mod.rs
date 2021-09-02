@@ -92,7 +92,8 @@ lazy_static! {
     };
 }
 
-pub fn preload_label(v: &[Tok], m: &mut Mem, c: &Code) -> Result<(), Error>{
+pub fn preload_label(m: &mut Mem, c: &Code) -> Result<(), Error>{
+    let v = c.last().unwrap();
     if let Tok::Sym(ref n) = v[0] {
         if n == "lbl" {
             m.label_add(
