@@ -37,7 +37,7 @@ impl Tok{
             Tok::Var(s) => format!("Var({})", s),
             Tok::Ltl(s) => format!("Ltl({})", s),
             Tok::Sym(s) => format!("Sym({})", s),
-            Tok::Eof => "Eof".to_string(),
+            Tok::Eof => "Eof".to_owned(),
         }
     }
     fn from_u8(vec: &[u8]) -> Result<Tok, String> {
@@ -91,14 +91,14 @@ impl Tok{
                 let s = unsafe { 
                     std::str::from_utf8_unchecked(vec) 
                 };
-                Ok(Tok::Ltl(s[1..len-1].to_string()))
+                Ok(Tok::Ltl(s[1..len-1].to_owned()))
             }
             // Sym
             _ => { 
                 let s = unsafe { 
                     std::str::from_utf8_unchecked(vec) 
                 };
-                Ok(Tok::Sym(s.to_string()))
+                Ok(Tok::Sym(s.to_owned()))
             }
         }
     }

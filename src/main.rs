@@ -29,6 +29,7 @@ fn main() {
             Err(e) => panic!("{}", e),
         };
     }
+    let mut i = 0;
     loop {
         if code.ptr() == code.len() {
             break;
@@ -37,8 +38,9 @@ fn main() {
             .unwrap()
             .respond(&mut m, &mut code).unwrap();
         println!("{}", m.mem_at(0).unwrap());
-        if m.mem_at(0).unwrap() == 10000.0 {
+        if i == 10000 {
             break;
         }
+        i += 1;
     };
 }

@@ -4,11 +4,8 @@ use super::*;
 
 fn parse_arg(v: &[Tok], m: &Mem) -> Result<(f64, f64), Error>{
     argc_guard!(v, 2);
-    let mut a = [0.0; 2];
-    for i in 0..2 {
-        a[i] = v[i].get_value(m)?;
-    }
-    Ok((a[0], a[1]))
+    Ok((v[0].get_value(m)?, 
+        v[1].get_value(m)?))
 }
 
 macro_rules! math {

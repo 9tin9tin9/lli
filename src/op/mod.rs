@@ -19,7 +19,7 @@ impl Signal{
             Signal::Jmp(idx) =>
                 code.ptr_set(idx),
             Signal::SetLbl(ref label) => {
-                m.label_add(label.to_string(), code.ptr());
+                m.label_add(label.to_owned(), code.ptr()+1);
                 code.ptr_incr();
             },
         };
@@ -82,6 +82,7 @@ lazy_static! {
 
         add_entry!(h, flow, jmp);
         add_entry!(h, flow, lbl);
+        add_entry!(h, flow, cnd);
         h
     };
 }

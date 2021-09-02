@@ -1,3 +1,4 @@
+var:A,[1]
 lbl:Here
-add:[0],1
+add:$A,1
 jmp:Here

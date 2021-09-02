@@ -27,7 +27,7 @@ pub fn var(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     argc_guard!(v, 2);
     let var_name = v[0].get_sym()?;
     let idx = v[1].get_loc(m)?;
-    m.var_add(var_name.to_string(), idx);
+    m.var_add(var_name.to_owned(), idx);
     Ok(Signal::None)
 }
 
@@ -38,7 +38,7 @@ macro_rules! mut_var_idx {
         let incr_val = $v[1].get_value($m)?;
         let mut var_idx = $m.var_find(&var_name)?;
         $a(&mut var_idx, incr_val as isize);
-        $m.var_add(var_name.to_string(), var_idx);
+        $m.var_add(var_name.to_owned(), var_idx);
         return Ok(Signal::None);
     }
 }
