@@ -49,7 +49,7 @@ mod math;
 mod cmp;
 mod logic;
 mod flow;
-mod io;
+mod sys;
 
 macro_rules! add_entry {
     ( $h:ident, $c:ident, $o:ident ) => {
@@ -90,9 +90,8 @@ lazy_static! {
         add_entry!(h, flow, lbl);
         add_entry!(h, flow, skp);
 
-        add_entry!(h, io, out);
-        add_entry!(h, io, outv);
-        add_entry!(h, io, outa);
+        add_entry!(h, sys, read);
+        add_entry!(h, sys, write);
         h
     };
 }

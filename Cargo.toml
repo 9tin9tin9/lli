@@ -12,3 +12,8 @@ ahash = "0.7.4"
 lto = true
 panic = "abort"
 debug = true
+incremental = true
+
+[profile.dev]
+debug = true
+incremental = true

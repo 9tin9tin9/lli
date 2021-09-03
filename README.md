@@ -3,6 +3,7 @@
 ## Ideas:
 
 - Memory slots: 1 slot store a `double`. Functions determine how to interprete double
+- [0] is reserved for writing output, [1] is reserved for writing system error code
 - Primitive type: Num, Idx, Var, Lbl, Ltl
 - No concept of Stack. Plain memory: Positive Memory and Negative Memory
     - Positive Memory(pmem): idx>=0, stores modifiable data
@@ -17,12 +18,18 @@ future reference for writing compiler: https://llvm.org/docs/tutorial/MyFirstLan
 - Comment: everything after hashtag
 - Character: single character wrapped in single quote, converts to Num type which value is its ASCII value
 - Reserved symbols: `:,"[]$#`
-- Arg Type:
+- Syntax of primitive Type:
     - Num: `-?[1-9][0-9]*(?:.[0-9]+)?`
     - Idx: Positive integer wrapped in square brackets, no space
     - Var: `$name`
     - Sym: `[^\s0-9$#"\[\]:,]+`
     - Ltl: String literal wrapped in double quotes
+- Args:
+    - Value: {Num, Idx, Var}
+    - Ptr: {Idx, Var, Ltl}
+    - Writable Ptr: {Idx, Var}
+        - Ltl returns negative ptr, which is unwritable
+    - Symbol: {Sym}
 - Statement: `Func arg1 arg2 arg3...`
 - 1 line per statement
  
@@ -30,49 +37,47 @@ future reference for writing compiler: https://llvm.org/docs/tutorial/MyFirstLan
 
 ```Python
 # memory management
-mov des:{Idx, Var}, src:{Num, Idx, Var}  # assignment, read value
-cpy des:{Idx, Var}, src:{Idx, Var, Ltl}, size:{Num, Idx, Var}  # memcpy. When src = Ltl, a new ltl is created and its idx is used as src idx
-var name:{Sym}, idx:{Idx, Var, Ltl}  # Creates or update $name with index = idx
-incr var:{Var}, num:{Num, Idx, Var} # Used to iterate->read/write pmem, potentially can be used to do stack operations
-decr var:{Var}, num:{Num, Idx, Var}  # Used to iterate->read nmem
-allc size:{Num}  # Push slots to pmem
+mov: des(WPtr), src(Value)  # assignment, read value
+cpy: des(WPtr), src(Ptr), size(Value  # memcpy. When src = Ltl, a new ltl is created and its idx is used as src idx
+var: name(Sym), idx(Ptr)  # Creates or update $name with index = idx
+incr: var(Var), num(Value)  # Used to iterate->read/write pmem, potentially can be used to do stack operations
+decr: var(Var), num(Value)  # Used to iterate->read nmem
+allc: size(Value)  # Push slots to pmem
 
 # maths, [0] is set as result
 # args can be index, var or Num
-add left:{Num, Idx, Var}, right:{Num, Idx, Var}  # +
-sub left:{Num, Idx, Var}, right:{Num, Idx, Var}  # -
-mul left:{Num, Idx, Var}, right:{Num, Idx, Var}  # *
-div left:{Num, Idx, Var}, right:{Num, Idx, Var}  # /
+add: left(Value), right(Value)  # +
+sub: left(Value), right(Value)  # -
+mul: left(Value), right(Value)  # *
+div: left(Value), right(Value)  # /
 
 # cmp, [0] is set to either 0 or 1
-eq left:{Num, Idx, Var}, right:{Num, Idx, Var}  # ==
-ne left:{Num, Idx, Var}, right:{Num, Idx, Var}  # !=
-gt left:{Num, Idx, Var}, right:{Num, Idx, Var}  # >
-lt left:{Num, Idx, Var}, right:{Num, Idx, Var}  # <
+eq: left(Value), right(Value)  # ==
+ne: left(Value), right(Value)  # !=
+gt: left(Value), right(Value)  # >
+lt: left(Value), right(Value)  # <
 
 # logic, [0] is set to either 0 or 1
-and left:{Num, Idx, Var}, right:{Num, Idx, Var}  # &&
-or left:{Num, Idx, Var}, right:{Num, Idx, Var}  # ||
-not bool:{Num, Idx, Var}  # !
+and: left(Value), right(Value)  # &&
+or: left(Value), right(Value)  # ||
+not: bool(Value)  # !
 
 # control flow
-skp idx:{Num, Idx, Var} # tests idx and skips a line if true
-jmp lbl:{Sym}  # unconditional jump
-lbl lbl:{Sym}  # set label. Label of same name stack up
+skp: idx(Value) # tests idx and skips a line if true
+jmp: lbl(Sym)  # unconditional jump
+lbl: lbl(Sym)  # set label. Label of same name stack up
 
-# IO
-in des:{Idx, Var}, size:{Num, Idx, Var}
-out src:{Idx, Var, Ltl}, size:{Num, Idx, Var}  # Read and print size number of ascii chars
-outa ascii:{Num, Idx, Var}  # Read a signle ascii value and prints it
-outv val:{Num, Idx, Var}  # Read and print value (float)
-read fd:{Num, Idx, Var}, des:{Idx, Var}, size:{Num, Idx, Var}
-write fd:{Num, Idx, Var}, src:{Idx, Var, Ltl}, size:{Num, Idx, Var}
+# sys
+exit: exit_code(Value)
+fork: ???
+# for read and write, [0] set to bytes read or wrote
+read: fd(Value), ptr(WPtr), size(Value)
+write: fd(Value), ptr(Ptr), size(Value)
+open: name(Ptr), access mode(Value)  # [0] sets to fd
+close: fd(Value)
 
 # extern
-src script_name:{Ltl}  # source another file. creates a sparate memory map
-ext lib:{Ltl}  # calls dlopen. [0] stores CPtr to handle or Num<0 when failure. [1] set to start of Null-ended error msg. Msg length < 999
-cls handle:{Idx, Var}  # closes handle
-cal handle:{Idx, Var} sym:{Ltl}  # call sym from handle. Error handling same as etn
+src script_name:Ltl  # source another file. creates a sparate memory map
 ```
 
 ## TODO
