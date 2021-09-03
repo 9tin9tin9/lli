@@ -61,8 +61,12 @@ jmp lbl:{Sym}  # unconditional jump
 lbl lbl:{Sym}  # set label. Label of same name stack up
 
 # IO
-in fd:{Num, Idx, Var}, des:{Idx, Var}, size:{Num, Idx, Var}
-out fd:{Num, Idx, Var}, src:{Idx, Var, Ltl}, size:{Num, Idx, Var}
+in des:{Idx, Var}, size:{Num, Idx, Var}
+out src:{Idx, Var, Ltl}, size:{Num, Idx, Var}  # Read and print size number of ascii chars
+outa ascii:{Num, Idx, Var}  # Read a signle ascii value and prints it
+outv val:{Num, Idx, Var}  # Read and print value (float)
+read fd:{Num, Idx, Var}, des:{Idx, Var}, size:{Num, Idx, Var}
+write fd:{Num, Idx, Var}, src:{Idx, Var, Ltl}, size:{Num, Idx, Var}
 
 # extern
 src script_name:{Ltl}  # source another file. creates a sparate memory map

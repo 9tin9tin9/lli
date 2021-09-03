@@ -1,5 +1,4 @@
 use super::*;
-use crate::lex::Tok;
 
 #[test]
 fn read_ltl(){

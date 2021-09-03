@@ -78,16 +78,6 @@ impl Tok{
             },
             // Ltl
             b'"' => {
-                let mut escaped = false;
-                for c in &vec[1..len-1] {
-                    if *c == b'\\' {
-                        escaped = !escaped;
-                        if escaped { continue; }
-                    }
-                    if *c == b'"' && !escaped {
-                        return Err("Unescaped double quote inside string literal".to_string());
-                    }
-                }
                 let s = unsafe { 
                     std::str::from_utf8_unchecked(vec) 
                 };
@@ -142,16 +132,16 @@ impl Tok{
     // alloc memory for String in nmem
     // Strings are terminated by two 0f64 consecutively
     pub fn create_ltl(&self, m: &mut Mem) -> Result<isize, Error> {
-        if let Tok::Ltl(s) = self {
+        if let Tok::Ltl(ref s) = self {
             let idx = m.nmem_len() as isize;
             // turn string to vec
             for c in s.as_bytes() {
                 m.nmem_allc(&[*c as f64]);
             }
             // null for utf16
-            m.nmem_allc(&vec![0f64; 2]);
+            m.nmem_allc(&[0f64; 2]);
             // change to negative
-            Ok(idx.checked_neg().unwrap_or_else(|| isize::MIN))
+            Ok(-idx)
         }else{
             Err(Error::WrongArgType(
                     vec![Tok::LTL_STR], 
@@ -160,7 +150,7 @@ impl Tok{
     }
 
     pub fn get_sym<'a>(&'a self) -> Result<&'a str, Error> {
-        if let Tok::Sym(s) = self {
+        if let Tok::Sym(ref s) = self {
             return Ok(s)
         }else{
             Err(Error::WrongArgType(
@@ -186,8 +176,10 @@ fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str)
     let mut len = 0;
     for c in it{
         len += 1;
-        let c = *c;
-        if c == b' ' || c == b'\t' {
+        let mut c = *c;
+        if c == b'#' && state != State::STARTED(true) {
+            break;
+        }else if c == b' ' || c == b'\t' {
             if state == State::STARTED(false) {
                 state = State::ENDED;
             }
@@ -222,11 +214,19 @@ fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str)
         }else if c == b'\\' {
             if state == State::STARTED(true) {
                 escaped = !escaped;
-                current.push(c);
+                if !escaped {
+                    current.push(c);
+                }
                 continue;
             }
         }else if state == State::WAITING {
             state = State::STARTED(false);
+        }else if escaped == true {
+            c = match c {
+                b'n' => b'\n',
+                b't' => b'\t',
+                _ => return Err("Unkown escape sequence".to_string()),
+            }
         }
         escaped = false;
         current.push(c);
@@ -255,7 +255,7 @@ pub fn tokenize(line: &str) -> Result<Vec<Tok>, String>{
         Tok::Sym(_) => 
             op,
         Tok::Eof =>
-            return Err("Found empty token".to_string()),
+            return Ok(v),
         _ => 
             return Err("Expects symbol as operator".to_string()),
     });

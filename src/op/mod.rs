@@ -49,6 +49,7 @@ mod math;
 mod cmp;
 mod logic;
 mod flow;
+mod io;
 
 macro_rules! add_entry {
     ( $h:ident, $c:ident, $o:ident ) => {
@@ -88,12 +89,19 @@ lazy_static! {
         add_entry!(h, flow, jmp);
         add_entry!(h, flow, lbl);
         add_entry!(h, flow, skp);
+
+        add_entry!(h, io, out);
+        add_entry!(h, io, outv);
+        add_entry!(h, io, outa);
         h
     };
 }
 
 pub fn preload_label(m: &mut Mem, c: &Code) -> Result<(), Error>{
     let v = c.last().unwrap();
+    if v.len() == 0 {
+        return Ok(());
+    }
     if let Tok::Sym(ref n) = v[0] {
         if n == "lbl" {
             m.label_add(
@@ -113,7 +121,7 @@ pub fn exec(m: &mut Mem, c: &Code) -> Result<Signal, Error>{
         return nop::nop(v, m);
     }
     
-    if let Tok::Sym(ref n) = &v[0] {
+    if let Tok::Sym(ref n) = v[0] {
         let name: &str = n;
         match OP_TABLE.get(name) {
             Some(f) =>

@@ -1,12 +1,11 @@
-skp:1
-jmp:false
-jmp:true
+lbl:start
 
-lbl:true
-mov:[0],10
-jmp:end
+add:[1],1
+mov:[1],[0]
 
-lbl:false
-mov:[0],-10
+outv:[1]
+outa:10
 
-lbl:end
+eq:[1],100000
+skp:[0]
+jmp:start

@@ -5,7 +5,7 @@ use crate::mem::Mem;
 pub fn jmp(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     argc_guard!(v, 1);
     let label = v[0].get_sym()?;
-    let loc = m.label_find(&label)?;
+    let loc = m.label_find(label)?;
     Ok(Signal::Jmp(loc))
 }
 
@@ -17,8 +17,7 @@ pub fn lbl(v: &[Tok], _: &mut Mem) -> Result<Signal, Error>{
 
 pub fn skp(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     argc_guard!(v, 1);
-    let is_true = v[0].get_value(&m)? != 0.0;
-    if is_true {
+    if v[0].get_value(m)? != 0.0 {
         Ok(Signal::Skp)
     }else{
         Ok(Signal::None)

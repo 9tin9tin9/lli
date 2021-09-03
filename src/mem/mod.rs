@@ -10,39 +10,41 @@ pub struct Mem{
 
 impl Mem{
     pub fn new() -> Mem {
-        Mem {
-            pmem: [0.0; 10000].to_vec(),
-            nmem: [0.0].to_vec(),
+        let mut m = Mem {
+            pmem: Vec::from([0.0; 10000]),
+            nmem: Vec::with_capacity(10000),
             var: AHashMap::new(),
             label: AHashMap::new(),
-        }
+        };
+        m.nmem.push(0.0);
+        m
     }
     pub fn mem_at(&self,i: isize) -> Result<f64, Error>{
         if i < 0 {
-            self.nmem_at(i.abs() as usize)
+            self.nmem_at(-i as usize)
         }else{
             self.pmem_at(i as usize)
         }
     }
     pub fn mem_set(&mut self, i: isize, v: f64) -> Result<(), Error>{
         if i < 0 {
-            self.nmem_set(i.abs() as usize, v)
+            self.nmem_set(-i as usize, v)
         }else{
             self.pmem_set(i as usize, v)
         }
     }
     pub fn pmem_at(&self, i: usize) -> Result<f64, Error>{
-        match self.pmem.get(i){
-            Some(f) => Ok(*f),
-            None => Err(Error::InvalidMemAccess(i as isize))
+        if i >= self.pmem.len() {
+            Err(Error::InvalidMemAccess(-(i as isize)))
+        }else{
+            Ok(self.pmem[i])
         }
     }
     pub fn pmem_set(&mut self, i: usize, v: f64) -> Result<(), Error>{
-        match self.pmem.get_mut(i){
-            Some(f) => {
-                Ok(*f = v)
-            },
-            None => Err(Error::InvalidMemAccess(i as isize)),
+        if i >= self.pmem.len() {
+            Err(Error::InvalidMemAccess(-(i as isize)))
+        }else{
+            Ok(self.pmem[i] = v)
         }
     }
     pub fn pmem_len(&self) -> usize{
@@ -52,17 +54,17 @@ impl Mem{
         self.pmem.extend_from_slice(v);
     }
     pub fn nmem_at(&self, i: usize) -> Result<f64, Error>{
-        match self.nmem.get(i){
-            Some(f) => Ok(*f),
-            None => Err(Error::InvalidMemAccess(-(i as isize))),
+        if i >= self.nmem.len() {
+            Err(Error::InvalidMemAccess(-(i as isize)))
+        }else{
+            Ok(self.nmem[i])
         }
     }
     pub fn nmem_set(&mut self, i: usize, v: f64) -> Result<(), Error>{
-        match self.nmem.get_mut(i){
-            Some(f) => {
-                Ok(*f = v)
-            },
-            None => Err(Error::InvalidMemAccess(-(i as isize))),
+        if i >= self.nmem.len() {
+            Err(Error::InvalidMemAccess(-(i as isize)))
+        }else{
+            Ok(self.nmem[i] = v)
         }
     }
     pub fn nmem_len(&self) -> usize{

@@ -8,7 +8,7 @@ pub struct Code{
 impl Code{
     pub fn new() -> Code{
         Code {
-            code: Vec::with_capacity(1000),
+            code: Vec::with_capacity(10000),
             ptr: 0,
         }
     }
@@ -19,13 +19,21 @@ impl Code{
         self.code.push(c);
         self.code.len()
     }
-    pub fn at(&self, i: usize) -> Option<&Vec<Tok>>{
-        self.code.get(i)
+    pub fn at(&self, i: usize) -> Option<&[Tok]>{
+        if i >= self.code.len() {
+            None
+        }else{
+            Some(&self.code[i])
+        }
     }
-    pub fn last(&self) -> Option<&Vec<Tok>>{
-        self.code.last()
+    pub fn last(&self) -> Option<&[Tok]>{
+        if self.code.len() == 0 {
+            None
+        }else{
+            Some(&self.code[self.code.len()-1])
+        }
     }
-    pub fn curr(&self) -> Option<&Vec<Tok>>{
+    pub fn curr(&self) -> Option<&[Tok]>{
         self.at(self.ptr)
     }
     pub fn len(&self) -> usize{

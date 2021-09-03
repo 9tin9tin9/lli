@@ -26,7 +26,7 @@ fn tokenize_num(){
 fn tokenize_strltl(){
     assert_eq!(
         vec![Tok::Sym("A".to_string()), 
-             Tok::Ltl("asd\\\"asd".to_string()), 
+             Tok::Ltl("asd\"asd".to_string()), 
              Tok::Sym("c".to_string())],
         tokenize(&"A: \"asd\\\"asd\" , c".to_string()).unwrap());
 }
