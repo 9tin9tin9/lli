@@ -9,6 +9,7 @@ pub enum Signal{
     None,
     SetLbl(String),
     Jmp(usize),
+    Ret,
     Skp,
 }
 
@@ -16,10 +17,17 @@ impl Signal{
     pub fn respond(&self, m: &mut Mem, code: &mut Code) -> Result<(), Error>{
         match *self {
             Signal::None => (),
-            Signal::Jmp(idx) =>{
+            Signal::Jmp(idx) => {
+                m.jmp_stack_push(code.ptr());
                 code.ptr_set(idx);
                 return Ok(());
             },
+            Signal::Ret => {
+                if let Some(ln) = m.jmp_stack_pop() {
+                    code.ptr_set(ln);
+                    return Ok(());
+                }
+            }
             Signal::SetLbl(ref label) => {
                 m.label_add(label.to_owned(), code.ptr()+1);
             },
@@ -87,9 +95,10 @@ lazy_static! {
         add_entry!(h, logic, or);
         add_entry!(h, logic, not);
 
+        add_entry!(h, flow, skp);
         add_entry!(h, flow, jmp);
         add_entry!(h, flow, lbl);
-        add_entry!(h, flow, skp);
+        add_entry!(h, flow, ret);
 
         add_entry!(h, sys, read);
         add_entry!(h, sys, write);

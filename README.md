@@ -67,6 +67,7 @@ not: bool(Value)  # !
 skp: idx(Value) # tests idx and skips a line if true
 jmp: lbl(Sym)  # unconditional jump
 lbl: lbl(Sym)  # set label. Label of same name stack up
+ret  # returns to the last jump label linenum+1
 
 # sys
 exit: exit_code(Value)
