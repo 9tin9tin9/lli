@@ -35,6 +35,14 @@ fn div(){
 }
 
 #[test]
+fn r#mod(){
+    let v = vec![Tok::Num(11.0), Tok::Num(10.0)];
+    let mut m = Mem::new();
+    super::r#mod(&v, &mut m).unwrap();
+    assert_eq!(m.mem_at(0).unwrap(), 1.0);
+}
+
+#[test]
 fn div_by_zero(){
     let v = vec![Tok::Num(1.0), Tok::Num(0.0)];
     let mut m = Mem::new();

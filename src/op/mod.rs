@@ -76,6 +76,7 @@ lazy_static! {
         add_entry!(h, math, sub);
         add_entry!(h, math, mul);
         add_entry!(h, math, div);
+        h.insert("mod", math::r#mod as OpFunc);
 
         add_entry!(h, cmp, eq);
         add_entry!(h, cmp, ne);

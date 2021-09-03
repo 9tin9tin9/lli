@@ -35,5 +35,9 @@ pub fn div(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     math!(/ , v, m)
 }
 
+pub fn r#mod(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
+    math!(% , v, m)
+}
+
 #[cfg(test)]
 mod test;

@@ -50,6 +50,7 @@ add: left(Value), right(Value)  # +
 sub: left(Value), right(Value)  # -
 mul: left(Value), right(Value)  # *
 div: left(Value), right(Value)  # /
+mod: left(Value), right(Value)  # %
 
 # cmp, [0] is set to either 0 or 1
 eq: left(Value), right(Value)  # ==
