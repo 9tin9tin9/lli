@@ -24,7 +24,7 @@ impl Signal{
             },
             Signal::Ret => {
                 if let Some(ln) = m.jmp_stack_pop() {
-                    code.ptr_set(ln);
+                    code.ptr_set(ln+1);
                     return Ok(());
                 }
             }
