@@ -1,11 +1,12 @@
+var:num,[1]
 lbl:start
 
-add:[1],1
-mov:[1],[0]
+add:$num,1
+mov:$num,[0]
 
-print_num:[1]
+print_num:$num
 write:"\n",1
 
-eq:[1],100000
+eq:$num,100000
 skp:[0]
 jmp:start

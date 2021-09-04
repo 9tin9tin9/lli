@@ -118,7 +118,11 @@ pub fn preprocess(
             if let Tok::Sym(ref mut hi) = t[1] {
                 hi.idx = m.label_add(c.ptr()+1);
             }
-        };
+        }else if n.sym == "var" {
+            if let Tok::Sym(ref mut hi) = t[1] {
+                hi.idx = m.var_add(0);
+            }
+        }
     }else{
         return Err(Error::WrongTokTypeForOp(t[0].to_type_str()))
     }
@@ -129,7 +133,6 @@ pub fn preprocess(
                 Some(i) => *i,
                 None => return Err(Error::UnknownOp(s.to_string())),
             });
-        println!("{:?}", n);
         c.push(t);
     }
     Ok(())
