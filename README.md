@@ -87,6 +87,8 @@ src script_name:Ltl  # source another file. creates a sparate memory map
 ```
 
 ## TODO
+- [ ] Implement all the functions listed in Predefined Function Section
+
 - [ ] Read idx from Var num
     - Idx of `$A` stores 10
     - `[$A]` returns 10
