@@ -1,19 +1,18 @@
 use ahash::AHashMap;
-use crate::lex::Tok;
+use crate::lex::*;
 use crate::mem::Mem;
 use crate::code::Code;
 use crate::error::Error;
 
 #[test]
 fn parse_statement_lookup_op(){
-    let t = vec![Tok::Sym("nop".to_string())];
+    let t = vec![Tok::Sym(HashIdx::from_str("nop"))];
     let mut m = Mem::new();
     let mut c = Code::new();
     let mut op_idx_table: AHashMap<&'static str, usize> = AHashMap::new();
     let mut func_vec: Vec<super::OpFunc> = Vec::new();
     super::init_op_table(&mut op_idx_table, &mut func_vec);
-    c.push(t);
-    super::preprocess(&op_idx_table, &mut m, &mut c).unwrap();
+    super::preprocess(&op_idx_table, &mut m, &mut c, t).unwrap();
     assert_eq!(super::exec(&mut func_vec, &mut m, &c).unwrap(), super::Signal::None);
 }
 
@@ -25,8 +24,8 @@ fn tok_read_value(){
     let t = Tok::Idx(1);
     m.pmem_set(1, 10.0).unwrap();
     assert_eq!(t.get_value(&m).unwrap(), 10f64);
-    let t = Tok::Var("A".to_string());
-    m.var_add("A".to_string(), 1);
+    let t = Tok::Var(HashIdx::new("A", 0));
+    m.var_add(1);
     assert_eq!(t.get_value(&m).unwrap(), 10f64);
 }
 
@@ -52,8 +51,8 @@ fn tok_get_loc(){
     let t = Tok::Idx(100);
     let mut m = Mem::new();
     assert_eq!(t.get_loc(&mut m).unwrap(), 100);
-    let t = Tok::Var("A".to_string());
-    m.var_add("A".to_string(), 100);
+    let t = Tok::Var(HashIdx::new("A", 0));
+    m.var_add(100);
     assert_eq!(t.get_loc(&mut m).unwrap(), 100);
     let t = Tok::Ltl("asda".to_string());
     assert_eq!(t.get_loc(&mut m).unwrap(), -1);

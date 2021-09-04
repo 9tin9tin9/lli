@@ -7,7 +7,7 @@ use crate::error::Error;
 #[derive(Clone, Debug, PartialEq)]
 pub enum Signal{
     None,
-    SetLbl(String),
+    SetLbl(usize),
     Jmp(usize),
     Ret,
     Skp,
@@ -28,8 +28,8 @@ impl Signal{
                     return Ok(());
                 }
             }
-            Signal::SetLbl(ref label) => {
-                m.label_add(label.to_owned(), code.ptr()+1);
+            Signal::SetLbl(label) => {
+                m.label_set(label, code.ptr()+1);
             },
             Signal::Skp => {
                 code.ptr_incr();
@@ -106,39 +106,42 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
 pub fn preprocess(
     op_idx_table: &AHashMap<&'static str, usize>, 
     m: &mut Mem, 
-    c: &mut Code
+    c: &mut Code,
+    mut t: Vec<Tok>
     ) -> Result<(), Error>
 {
-    let v = c.last().unwrap();
-    if v.len() == 0 {
-        c.func_idx_push(0);
+    if t.len() == 0 {
         return Ok(());
     }
-    if let Tok::Sym(ref n) = v[0] {
-        if n == "lbl" {
-            m.label_add(
-                v[1].get_sym()?
-                    .to_owned(), 
-                c.len());
+    if let Tok::Sym(ref n) = t[0] {
+        if n.sym == "lbl" {
+            if let Tok::Sym(ref mut hi) = t[1] {
+                hi.idx = m.label_add(c.ptr()+1);
+            }
         };
-        let n: &str = &n.to_owned();
-        c.func_idx_push(
-            match op_idx_table.get(n) {
-                Some(i) => *i,
-                None => return Err(Error::UnknownOp(n.to_string())),
-            });
-        Ok(())
     }else{
-        Err(Error::WrongTokTypeForOp(v[0].to_type_str()))
+        return Err(Error::WrongTokTypeForOp(t[0].to_type_str()))
     }
+    if let Tok::Sym(ref mut n) = t[0] {
+        let s: &str = &n.sym.to_owned();
+        n.idx = c.func_idx_push(
+            match op_idx_table.get(s) {
+                Some(i) => *i,
+                None => return Err(Error::UnknownOp(s.to_string())),
+            });
+        println!("{:?}", n);
+        c.push(t);
+    }
+    Ok(())
 }
 
 pub fn exec(func_vec: &[OpFunc], m: &mut Mem, c: &Code) -> Result<Signal, Error>{
-    let (idx, v) = c.curr().unwrap();
-    if v.len() == 0 {
-        return nop::nop(v, m);
+    let v = c.curr().unwrap();
+    if let Tok::Sym(ref hi) = v[0] {
+        func_vec[hi.idx](&v[1..], m)
+    }else{
+        Err(Error::WrongTokTypeForOp(v[0].to_type_str()))
     }
-    func_vec[idx](&v[1..], m)
 }
 
 #[cfg(test)]

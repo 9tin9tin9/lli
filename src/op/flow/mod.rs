@@ -12,7 +12,7 @@ pub fn jmp(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
 pub fn lbl(v: &[Tok], _: &mut Mem) -> Result<Signal, Error>{
     argc_guard!(v, 1);
     let label = v[0].get_sym()?;
-    Ok(Signal::SetLbl(label.to_owned()))
+    Ok(Signal::SetLbl(label.idx))
 }
 
 pub fn ret(v: &[Tok], _: &mut Mem) -> Result<Signal, Error>{

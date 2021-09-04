@@ -2,12 +2,33 @@ use crate::error::Error;
 use super::mem::Mem;
 
 #[derive(Clone, PartialEq, Debug)]
+pub struct HashIdx {
+    pub sym: String,
+    pub idx: usize,
+}
+
+impl HashIdx{
+    pub fn new(s: &str, i: usize) -> Self{
+        HashIdx {
+            sym: s.to_owned(),
+            idx: i,
+        }
+    }
+    pub fn from_str(s: &str) -> Self {
+        HashIdx {
+            sym: s.to_owned(),
+            idx: 0,
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub enum Tok{
     Num(f64), 
     Idx(isize), 
-    Var(String),
+    Var(HashIdx),
     Ltl(String),
-    Sym(String),  // includes label and operator
+    Sym(HashIdx),  // includes label and operator
     Eof,
 }
 
@@ -34,9 +55,9 @@ impl Tok{
         match self {
             Tok::Num(n) => format!("Num({})", n),
             Tok::Idx(i) => format!("Idx({})", i),
-            Tok::Var(s) => format!("Var({})", s),
+            Tok::Var(s) => format!("Var({})", s.sym),
             Tok::Ltl(s) => format!("Ltl({})", s),
-            Tok::Sym(s) => format!("Sym({})", s),
+            Tok::Sym(s) => format!("Sym({})", s.sym),
             Tok::Eof => "Eof".to_owned(),
         }
     }
@@ -72,9 +93,9 @@ impl Tok{
             // Var
             b'$' => {
                 let s = unsafe { 
-                    std::str::from_utf8_unchecked(vec) 
+                    std::str::from_utf8_unchecked(&vec[1..]) 
                 };
-                Ok(Tok::Var(s[1..].to_string()))
+                Ok(Tok::Var(HashIdx::from_str(s)))
             },
             // Ltl
             b'"' => {
@@ -88,7 +109,7 @@ impl Tok{
                 let s = unsafe { 
                     std::str::from_utf8_unchecked(vec) 
                 };
-                Ok(Tok::Sym(s.to_owned()))
+                Ok(Tok::Sym(HashIdx::from_str(s)))
             }
         }
     }
@@ -149,7 +170,7 @@ impl Tok{
         }
     }
 
-    pub fn get_sym<'a>(&'a self) -> Result<&'a str, Error> {
+    pub fn get_sym<'a>(&'a self) -> Result<&'a HashIdx, Error> {
         if let Tok::Sym(ref s) = self {
             return Ok(s)
         }else{

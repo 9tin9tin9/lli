@@ -25,20 +25,20 @@ pub fn cpy(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
 
 pub fn var(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     argc_guard!(v, 2);
-    let var_name = v[0].get_sym()?;
+    let var = v[0].get_sym()?;
     let idx = v[1].get_loc(m)?;
-    m.var_add(var_name.to_owned(), idx);
+    m.var_set(var.idx, idx);
     Ok(Signal::None)
 }
 
 macro_rules! mut_var_idx {
     ( $v:expr, $m:expr, $a:ident ) => {
         argc_guard!($v, 2);
-        let var_name = $v[0].get_sym()?;
+        let var = $v[0].get_sym()?;
         let incr_val = $v[1].get_value($m)?;
-        let mut var_idx = $m.var_find(&var_name)?;
+        let mut var_idx = $m.var_find(&var)?;
         $a(&mut var_idx, incr_val as isize);
-        $m.var_add(var_name.to_owned(), var_idx);
+        $m.var_set(var.idx, var_idx);
         return Ok(Signal::None);
     }
 }

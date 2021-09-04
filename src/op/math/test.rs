@@ -60,7 +60,7 @@ fn div_zero_by_zero(){
 
 #[test]
 fn add_incorrect_args_num(){
-    let v = vec![Tok::Ltl("asdas".to_string()), Tok::Sym("asdasd".to_string()), Tok::Ltl("asd".to_string())];
+    let v = vec![Tok::Ltl("asdas".to_string()), Tok::Num(0.0), Tok::Ltl("asd".to_string())];
     let mut m = Mem::new();
     let r = super::add(&v, &mut m);
     assert_eq!(Err(Error::WrongArgCount(2, 3)), r);
@@ -68,7 +68,7 @@ fn add_incorrect_args_num(){
 
 #[test]
 fn add_incorrect_args_type(){
-    let v = vec![Tok::Ltl("asdas".to_string()), Tok::Sym("asdasd".to_string())];
+    let v = vec![Tok::Ltl("asdas".to_string()), Tok::Ltl("asdasd".to_string())];
     let mut m = Mem::new();
     let r = super::add(&v, &mut m);
     assert_eq!(

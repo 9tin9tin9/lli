@@ -22,8 +22,8 @@ fn main() {
     let mut m = mem::Mem::new();
     let mut code = code::Code::new();
     let mut op_idx_table: AHashMap<&'static str, usize> = AHashMap::new();
-    let mut func_vec: Vec<op::OpFunc> = Vec::new();
-    op::init_op_table(&mut op_idx_table, &mut func_vec);
+    let mut op_vec: Vec<op::OpFunc> = Vec::new();
+    op::init_op_table(&mut op_idx_table, &mut op_vec);
 
     let lines = io::BufReader::new(file).lines();
     for line in lines {
@@ -33,8 +33,7 @@ fn main() {
                     continue;
                 }
                 let t = lex::tokenize(&s).unwrap();
-                code.push(t);
-                op::preprocess(&op_idx_table, &mut m, &mut code).unwrap()
+                op::preprocess(&op_idx_table, &mut m, &mut code, t).unwrap()
             },
             Err(e) => panic!("{}", e),
         };
@@ -43,7 +42,7 @@ fn main() {
         if code.ptr() >= code.len() {
             break;
         }
-        op::exec(&func_vec, &mut m, &code)
+        op::exec(&op_vec, &mut m, &code)
             .unwrap()
             .respond(&mut m, &mut code).unwrap();
     };

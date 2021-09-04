@@ -1,11 +1,11 @@
-use ahash::AHashMap;
 use super::error::Error;
+use crate::lex::HashIdx;
 
 pub struct Mem{
     pmem: Vec<f64>,
     nmem: Vec<f64>,
-    var: AHashMap<String, isize>,
-    label: AHashMap<String, usize>,
+    var: Vec<isize>,
+    label: Vec<usize>,
     jmp_stack: Vec<usize>,
 }
 
@@ -14,8 +14,8 @@ impl Mem{
         let mut m = Mem {
             pmem: Vec::from([0.0; 10000]),
             nmem: Vec::with_capacity(10000),
-            var: AHashMap::new(),
-            label: AHashMap::new(),
+            var: Vec::with_capacity(100000),
+            label: Vec::with_capacity(100000),
             jmp_stack: Vec::with_capacity(10000),
         };
         m.nmem.push(0.0);
@@ -73,15 +73,21 @@ impl Mem{
         self.nmem.len()
     }
     pub fn nmem_allc(&mut self, v: &[f64]) {
-        self.nmem.extend_from_slice(v);
+        for val in v{
+            self.nmem.push(*val);
+        }
     }
-    pub fn var_add(&mut self, l: String, p: isize){
-        self.var.insert(l, p);
+    pub fn var_add(&mut self, i: isize) -> usize {
+        self.var.push(i);
+        self.var.len()-1
     }
-    pub fn var_find(&self, l: &str) -> Result<isize, Error>{
-        match self.var.get(l) {
+    pub fn var_set(&mut self, var: usize, idx: isize){
+        self.var[var] = idx;
+    }
+    pub fn var_find(&self, hi: &HashIdx) -> Result<isize, Error>{
+        match self.var.get(hi.idx) {
             Some(v) => Ok(*v),
-            None => Err(Error::UnknownVarName(l.to_string()))
+            None => Err(Error::UnknownVarName(hi.sym.to_string()))
         }
     }
 
@@ -106,13 +112,17 @@ impl Mem{
             next(&mut i);
         }
     }
-    pub fn label_add(&mut self, l: String, p: usize){
-         self.label.insert(l, p);
+    pub fn label_add(&mut self, line: usize) -> usize{
+         self.label.push(line);
+         self.label.len()-1
     }
-    pub fn label_find(&self, l: &str) -> Result<usize, Error>{
-        match self.label.get(l) {
+    pub fn label_set(&mut self, lbl: usize, line: usize){
+        self.label[lbl] = line;
+    }
+    pub fn label_find(&self, hi: &HashIdx) -> Result<usize, Error>{
+        match self.label.get(hi.idx) {
             Some(i) => Ok(*i),
-            None => Err(Error::UnknownLabel(l.to_string())),
+            None => Err(Error::UnknownLabel(hi.sym.to_string())),
         }
     }
     pub fn jmp_stack_push(&mut self, ln: usize) {

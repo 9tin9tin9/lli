@@ -1,4 +1,4 @@
-use crate::lex::Tok;
+use crate::lex::*;
 use crate::mem::Mem;
 
 #[test]
@@ -23,34 +23,41 @@ fn cpy(){
 
 #[test]
 fn var(){
-    let v = vec![Tok::Sym("A".to_string()), Tok::Idx(10)];
+    let v = vec![Tok::Sym(HashIdx::new("A", 0)), Tok::Idx(10)];
     let mut m = Mem::new();
+    m.var_add(10);
     super::var(&v, &mut m).unwrap();
-    assert_eq!(m.var_find("A").unwrap(), 10);
+    if let Tok::Sym(hi) = &v[0] {
+        assert_eq!(m.var_find(&hi).unwrap(), 10);
+    }
 }
 
 #[test]
 fn incr(){
-    let v = vec![Tok::Sym("A".to_string()), Tok::Num(10.0)];
+    let v = vec![Tok::Sym(HashIdx::new("A", 0)), Tok::Num(10.0)];
     let mut m = Mem::new();
-    m.var_add("A".to_string(), 0);
-    super::incr(&v, &mut m).unwrap();
-    assert_eq!(m.var_find("A").unwrap(), 10);
-    m.var_add("A".to_string(), -1);
-    super::incr(&v, &mut m).unwrap();
-    assert_eq!(m.var_find("A").unwrap(), -11);
+    if let Tok::Sym(hi) = &v[0]{
+        m.var_add(0);
+        super::incr(&v, &mut m).unwrap();
+        assert_eq!(m.var_find(&hi).unwrap(), 10);
+        m.var_set(hi.idx, -1);
+        super::incr(&v, &mut m).unwrap();
+        assert_eq!(m.var_find(&hi).unwrap(), -11);
+    }
 }
 
 #[test]
 fn decr(){
-    let v = vec![Tok::Sym("A".to_string()), Tok::Num(10.0)];
+    let v = vec![Tok::Sym(HashIdx::new("A", 0)), Tok::Num(10.0)];
     let mut m = Mem::new();
-    m.var_add("A".to_string(), 0);
-    super::decr(&v, &mut m).unwrap();
-    assert_eq!(m.var_find("A").unwrap(), -10);
-    m.var_add("A".to_string(), -1);
-    super::decr(&v, &mut m).unwrap();
-    assert_eq!(m.var_find("A").unwrap(), 9);
+    if let Tok::Sym(hi) = &v[0]{
+        m.var_add(0);
+        super::decr(&v, &mut m).unwrap();
+        assert_eq!(m.var_find(&hi).unwrap(), -10);
+        m.var_set(hi.idx, -1);
+        super::decr(&v, &mut m).unwrap();
+        assert_eq!(m.var_find(&hi).unwrap(), 9);
+    }
 }
 
 #[test]

@@ -21,8 +21,9 @@ impl Code{
         self.code.push(c);
         self.code.len()
     }
-    pub fn func_idx_push(&mut self, idx: usize){
+    pub fn func_idx_push(&mut self, idx: usize) -> usize{
         self.func_idx.push(idx);
+        idx
     }
     pub fn at(&self, i: usize) -> Option<&[Tok]>{
         if i >= self.code.len() {
@@ -38,13 +39,11 @@ impl Code{
             Some(&self.code[self.code.len()-1])
         }
     }
-    pub fn curr(&self) -> Option<(usize, &[Tok])>{
+    pub fn curr(&self) -> Option<&[Tok]>{
         if self.ptr >= self.len() {
             None
         }else {
-            Some((
-                self.func_idx[self.ptr], 
-                &self.code[self.ptr]))
+            Some(&self.code[self.ptr])
         }
     }
     pub fn len(&self) -> usize{
