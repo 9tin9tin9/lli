@@ -24,6 +24,13 @@ pub fn write(v: &[Tok], m: &mut Mem) -> Result<Signal, Error> {
     Ok(Signal::None)
 }
 
+pub fn print_num(v: &[Tok], m: &mut Mem) -> Result<Signal, Error> {
+    argc_guard!(v, 1);
+    let val = v[0].get_value(m)?;
+    print!("{}", val);
+    Ok(Signal::None)
+}
+
 pub fn read(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     argc_guard!(v, 2);
     let des_idx = v[0].get_loc(m)?;

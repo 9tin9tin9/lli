@@ -2,6 +2,7 @@ use crate::lex::*;
 
 pub struct Code{
     code: Vec<Vec<Tok>>,
+    func_idx: Vec<usize>,
     ptr: usize,
 }
 
@@ -9,6 +10,7 @@ impl Code{
     pub fn new() -> Code{
         Code {
             code: Vec::with_capacity(10000),
+            func_idx: Vec::with_capacity(10000),
             ptr: 0,
         }
     }
@@ -18,6 +20,9 @@ impl Code{
         }
         self.code.push(c);
         self.code.len()
+    }
+    pub fn func_idx_push(&mut self, idx: usize){
+        self.func_idx.push(idx);
     }
     pub fn at(&self, i: usize) -> Option<&[Tok]>{
         if i >= self.code.len() {
@@ -33,8 +38,14 @@ impl Code{
             Some(&self.code[self.code.len()-1])
         }
     }
-    pub fn curr(&self) -> Option<&[Tok]>{
-        self.at(self.ptr)
+    pub fn curr(&self) -> Option<(usize, &[Tok])>{
+        if self.ptr >= self.len() {
+            None
+        }else {
+            Some((
+                self.func_idx[self.ptr], 
+                &self.code[self.ptr]))
+        }
     }
     pub fn len(&self) -> usize{
         self.code.len()
