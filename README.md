@@ -87,8 +87,8 @@ src script_name:Ltl  # source another file. creates a sparate memory map
 ```
 
 ## TODO
-[ ] Read idx from Var num
-- Idx of `$A` stores 10
-- `[$A]` returns 10
+- [ ] Read idx from Var num
+    - Idx of `$A` stores 10
+    - `[$A]` returns 10
 
-[ ] Write more tests
+- [ ] Write more tests
