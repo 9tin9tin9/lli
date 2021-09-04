@@ -73,9 +73,7 @@ impl Mem{
         self.nmem.len()
     }
     pub fn nmem_allc(&mut self, v: &[f64]) {
-        for val in v{
-            self.nmem.push(*val);
-        }
+        self.nmem.extend_from_slice(v);
     }
     pub fn var_add(&mut self, i: isize) -> usize {
         self.var.push(i);
