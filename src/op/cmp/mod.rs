@@ -12,11 +12,7 @@ macro_rules! cmp {
     ( $o:tt, $v:expr, $m:expr ) => {
         {
             let (left, right) = parse_arg($v, $m)?;
-            let result = if (left $o right) {
-                1.0
-            }else {
-                0.0
-            };
+            let result = (left $o right) as i8 as f64;
             $m.mem_set(0, result).unwrap();
             return Ok(Signal::None)
         }

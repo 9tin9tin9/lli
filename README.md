@@ -78,6 +78,10 @@ write: fd(Value), ptr(Ptr), size(Value)
 open: name(Ptr), access mode(Value)  # [0] sets to fd
 close: fd(Value)
 
+# extra
+# added for either debug or simplify instructions
+print_num: val(Value)
+
 # extern
 src script_name:Ltl  # source another file. creates a sparate memory map
 ```

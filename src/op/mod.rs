@@ -58,6 +58,7 @@ mod cmp;
 mod logic;
 mod flow;
 mod sys;
+mod extra;
 
 macro_rules! add_entry {
     ( $h:ident, $v:ident, $c:ident, $o:ident ) => {
@@ -100,7 +101,8 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
 
     add_entry!(h, v, sys, read);
     add_entry!(h, v, sys, write);
-    add_entry!(h, v, sys, print_num);
+
+    add_entry!(h, v, extra, print_num);
 }
 
 pub fn preprocess(
@@ -113,28 +115,30 @@ pub fn preprocess(
     if t.len() == 0 {
         return Ok(());
     }
-    if let Tok::Sym(ref n) = t[0] {
-        if n.sym == "lbl" {
-            if let Tok::Sym(ref mut hi) = t[1] {
-                hi.idx = m.label_add(c.ptr()+1);
-            }
-        }else if n.sym == "var" {
-            if let Tok::Sym(ref mut hi) = t[1] {
-                hi.idx = m.var_add(0);
-            }
-        }
-    }else{
-        return Err(Error::WrongTokTypeForOp(t[0].to_type_str()))
-    }
     if let Tok::Sym(ref mut n) = t[0] {
-        let s: &str = &n.sym.to_owned();
+        let s: &str = &n.sym;
         n.idx = c.func_idx_push(
             match op_idx_table.get(s) {
                 Some(i) => *i,
                 None => return Err(Error::UnknownOp(s.to_string())),
             });
-        c.push(t);
+    }else{
+        return Err(Error::WrongTokTypeForOp(t[0].to_type_str()))
     }
+    if let Tok::Sym(ref n) = t[0] {
+        match n.idx {
+            // lbl
+            21 => if let Tok::Sym(ref mut hi) = t[1] {
+                hi.idx = m.label_add(c.ptr()+1);
+            },
+            // var
+            3 => if let Tok::Sym(ref mut hi) = t[1] {
+                hi.idx = m.var_add(0);
+            },
+            _ => (),
+        }
+    }
+    c.push(t);
     Ok(())
 }
 
