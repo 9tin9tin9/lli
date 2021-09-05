@@ -1,5 +1,7 @@
 use super::error::Error;
 use crate::lex::HashIdx;
+use std::os::unix::io::{ FromRawFd, RawFd, IntoRawFd };
+use std::fs::File;
 
 pub struct Mem{
     pmem: Vec<f64>,
@@ -7,6 +9,7 @@ pub struct Mem{
     var: Vec<isize>,
     label: Vec<usize>,
     jmp_stack: Vec<usize>,
+    pub fd: Vec<RawFd>,
 }
 
 impl Mem{
@@ -17,8 +20,14 @@ impl Mem{
             var: Vec::with_capacity(100000),
             label: Vec::with_capacity(100000),
             jmp_stack: Vec::with_capacity(10000),
+            fd: Vec::new(),
         };
         m.nmem.push(0.0);
+        unsafe {
+            m.fd.push(File::from_raw_fd(0).into_raw_fd());
+            m.fd.push(File::from_raw_fd(1).into_raw_fd());
+            m.fd.push(File::from_raw_fd(2).into_raw_fd());
+        }
         m
     }
     pub fn mem_at(&self,i: isize) -> Result<f64, Error>{

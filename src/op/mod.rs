@@ -27,7 +27,7 @@ impl Signal{
                     code.ptr_set(ln+1);
                     return Ok(());
                 }
-            }
+            },
             Signal::SetLbl(label) => {
                 m.label_set(label, code.ptr()+1);
             },

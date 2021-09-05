@@ -14,7 +14,7 @@ pub fn cpy(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     argc_guard!(v, 3);
     let mut des_idx = v[0].get_loc(m)?;
     let mut src_idx = v[1].get_loc(m)?;
-    let size_val = v[2].get_value(m)? as isize;
+    let size_val = v[2].get_uint(m)?;
     for _ in 0..size_val {
         Tok::Idx(des_idx).write_value( m, m.mem_at(src_idx).unwrap())?;
         mem::idx_incr(&mut des_idx, 1);

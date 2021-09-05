@@ -1,13 +1,2 @@
-var:num,[1]
-
-lbl:start
-
-add:$num,1
-mov:$num,[0]
-
-print_num:$num
-write:"\n",1
-
-eq:$num,100000
-skp:[0]
-jmp:start
+read:0,[1],10
+write:1,[1],10

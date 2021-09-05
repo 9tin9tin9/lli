@@ -1,40 +1,46 @@
 use crate::error::Error;
 use crate::lex::Tok;
 use crate::mem::{Mem, idx_incr};
-use std::io::{ stdout, Write, stdin, Read };
+use std::io::{ Write, Read };
+use std::fs::File;
+use std::os::unix::io::{ FromRawFd, IntoRawFd };
 use super::*;
 
 const MAX_INPUT: usize = 1024;
 
 pub fn write(v: &[Tok], m: &mut Mem) -> Result<Signal, Error> {
-    argc_guard!(v, 2);
-    let mut src_idx = v[0].get_loc(m)?;
-    let size = v[1].get_value(m)?;
-    if size != (size as usize) as f64 {
-        return Err(Error::NegativeOrNonIntergerSize(size));
+    argc_guard!(v, 3);
+    let fd = v[0].get_uint(m)? as i32;
+    if !m.fd.contains(&fd) {
+        return Err(Error::BadFileDescriptor(fd));
     }
-    let mut stdout = stdout();
+    let mut f = unsafe { File::from_raw_fd(fd) };
+    let mut src_idx = v[1].get_loc(m)?;
+    let size = v[2].get_uint(m)?;
     let mut bytes_wrote = 0;
     for _ in 0..size as usize {
-        stdout.write(&[m.mem_at(src_idx)? as u8]).unwrap();
+        f.write(&[m.mem_at(src_idx)? as u8]).unwrap();
         idx_incr(&mut src_idx, 1);
         bytes_wrote += 1;
     }
+    f.into_raw_fd();
     m.mem_set(0, bytes_wrote as f64)?;
     Ok(Signal::None)
 }
 
 pub fn read(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
-    argc_guard!(v, 2);
-    let des_idx = v[0].get_loc(m)?;
-    let size = v[1].get_value(m)?;
-    if size != (size as usize) as f64 {
-        return Err(Error::NegativeOrNonIntergerSize(size));
+    argc_guard!(v, 3);
+    let fd = v[0].get_uint(m)? as i32;
+    if !m.fd.contains(&fd) {
+        return Err(Error::BadFileDescriptor(fd));
     }
+    let mut f = unsafe { File::from_raw_fd(fd) };
+    let des_idx = v[1].get_loc(m)?;
+    let size = v[2].get_uint(m)?;
     let size = size as usize;
-    let mut stdin = stdin();
     let mut buf = [0; MAX_INPUT];
-    stdin.read(&mut buf).unwrap();
+    f.read(&mut buf).unwrap();
+    f.into_raw_fd();
     for i in 0..MAX_INPUT {
         let c = buf[i] as f64;
         if c == 0.0 || i == size {

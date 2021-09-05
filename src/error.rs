@@ -15,4 +15,6 @@ pub enum Error{
     NegativeOrNonIntergerSize(f64),  // got: f64
 
     InvalidOutType(String),  // got: String
+
+    BadFileDescriptor(std::os::unix::io::RawFd),  // fd tried to open
 }

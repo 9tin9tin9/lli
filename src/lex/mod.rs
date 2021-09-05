@@ -128,6 +128,14 @@ impl Tok{
         }
     }
 
+    pub fn get_uint(&self, m: &Mem) -> Result<u64, Error>{
+        let float = self.get_value(m)?;
+        if float != (float as usize) as f64 {
+            return Err(Error::NegativeOrNonIntergerSize(float));
+        }
+        Ok(float as u64)
+    }
+
     pub fn get_loc(&self, m: &mut Mem) -> Result<isize, Error> {
         match self {
             Tok::Idx(i) => Ok(*i),

@@ -75,7 +75,7 @@ fork: ???
 # for read and write, [0] set to bytes read or wrote
 read: fd(Value), ptr(WPtr), size(Value)
 write: fd(Value), ptr(Ptr), size(Value)
-open: name(Ptr), access mode(Value)  # [0] sets to fd
+open: name(Ptr | Sym), access mode(Value)  # [0] sets to fd
 close: fd(Value)
 
 # extra
