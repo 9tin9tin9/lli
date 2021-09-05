@@ -1,3 +1,4 @@
+use ahash::AHashMap;
 use super::error::Error;
 use crate::lex::HashIdx;
 use std::os::unix::io::{ FromRawFd, RawFd, IntoRawFd };
@@ -6,7 +7,9 @@ use std::fs::File;
 pub struct Mem{
     pmem: Vec<f64>,
     nmem: Vec<f64>,
+    pub var_hash: AHashMap<String, usize>,
     var: Vec<isize>,
+    pub label_hash: AHashMap<String, usize>,
     label: Vec<usize>,
     jmp_stack: Vec<usize>,
     pub fd: Vec<RawFd>,
@@ -17,7 +20,9 @@ impl Mem{
         let mut m = Mem {
             pmem: Vec::from([0.0; 10000]),
             nmem: Vec::with_capacity(10000),
+            var_hash: AHashMap::new(),
             var: Vec::with_capacity(100000),
+            label_hash: AHashMap::new(),
             label: Vec::with_capacity(100000),
             jmp_stack: Vec::with_capacity(10000),
             fd: Vec::new(),
@@ -94,7 +99,7 @@ impl Mem{
     pub fn var_find(&self, hi: &HashIdx) -> Result<isize, Error>{
         match self.var.get(hi.idx) {
             Some(v) => Ok(*v),
-            None => Err(Error::UnknownVarName(hi.sym.to_string()))
+            None => Err(Error::UndefinedVar(hi.sym.to_string()))
         }
     }
 

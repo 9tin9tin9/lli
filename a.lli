@@ -1,2 +1,14 @@
-read:0,[1],10
-write:1,[1],10
+var:result,[0]
+var:sum,[1]
+
+lbl:start
+
+add:$sum,1
+mov:$sum,$result
+
+print_num:$sum
+write:1,"\n",1
+
+eq:$sum,100
+skp:$result
+jmp:start

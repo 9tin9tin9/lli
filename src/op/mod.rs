@@ -127,15 +127,34 @@ pub fn preprocess(
     }
     if let Tok::Sym(ref n) = t[0] {
         match n.idx {
-            // lbl
-            21 => if let Tok::Sym(ref mut hi) = t[1] {
-                hi.idx = m.label_add(c.ptr()+1);
+            // jmp | lbl
+            20 | 21 => if let Tok::Sym(ref mut hi) = t[1] {
+                hi.idx = match m.label_hash.get(&hi.sym) {
+                    Some(i) => *i,
+                    None => {
+                        let idx = m.label_add(c.ptr()+1);
+                        m.label_hash.insert(hi.sym.to_owned(), idx);
+                        idx
+                    },
+                };
             },
             // var
             3 => if let Tok::Sym(ref mut hi) = t[1] {
-                hi.idx = m.var_add(0);
+                if let None = m.var_hash.get(&hi.sym) {
+                    hi.idx = m.var_add(0);
+                    m.var_hash.insert(hi.sym.to_owned(), hi.idx);
+                }
             },
             _ => (),
+        }
+    }
+    for a in &mut t[1..] {
+        if let Tok::Var(ref mut hi) = a {
+            hi.idx = match m.var_hash.get(&hi.sym) {
+                Some(i) => *i,
+                None => 
+                    return Err(Error::UndefinedVar(hi.sym.to_owned())),
+            }
         }
     }
     c.push(t);
