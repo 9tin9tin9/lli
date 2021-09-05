@@ -46,5 +46,4 @@ fn main() {
             .unwrap()
             .respond(&mut m, &mut code).unwrap();
     };
-    // println!("{}", m.mem_at(0).unwrap());
 }

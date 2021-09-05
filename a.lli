@@ -6,7 +6,7 @@ lbl:start
 add:$sum,1
 mov:$sum,$result
 
-print_num:$sum
+print_num:1,$sum
 write:1,"\n",1
 
 eq:$sum,100

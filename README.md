@@ -80,7 +80,7 @@ close: fd(Value)
 
 # extra
 # added for either debug or simplify instructions
-print_num: val(Value)
+print_num: fd(Value, val(Value)
 
 # extern
 src script_name:Ltl  # source another file. creates a sparate memory map

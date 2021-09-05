@@ -23,6 +23,7 @@ pub fn write(v: &[Tok], m: &mut Mem) -> Result<Signal, Error> {
         idx_incr(&mut src_idx, 1);
         bytes_wrote += 1;
     }
+    // return file ownership to file descriptor, don't close the file here
     f.into_raw_fd();
     m.mem_set(0, bytes_wrote as f64)?;
     Ok(Signal::None)
