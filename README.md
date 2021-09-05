@@ -94,3 +94,7 @@ src script_name:Ltl  # source another file. creates a sparate memory map
     - `[$A]` returns 10
 
 - [ ] Write more tests
+
+## Implement note
+
+As the interpreter performs read write directly on file descriptor, the mutex added by rust on stdout and stdin are bypassed. Mutex or related things should be added manually if multithreading is to be implemented in the future.
