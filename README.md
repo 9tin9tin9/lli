@@ -99,6 +99,8 @@ src script_name:Ltl  # source another file. creates a sparate memory map
 
 - [ ] Create all the string literals during preprocessing
 
+- [ ] Fixed assert\_eq on `error::Error` in tests
+
 ## Implement note
 
 As the interpreter performs read write directly on file descriptor, the mutex added by rust on stdout and stdin are bypassed. Mutex or related things should be added manually if multithreading is to be implemented in the future.
