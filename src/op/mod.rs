@@ -99,6 +99,9 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
     add_entry!(h, v, flow, lbl);
     add_entry!(h, v, flow, ret);
 
+    add_entry!(h, v, sys, exit);
+    add_entry!(h, v, sys, open);
+    add_entry!(h, v, sys, close);
     add_entry!(h, v, sys, read);
     add_entry!(h, v, sys, write);
 

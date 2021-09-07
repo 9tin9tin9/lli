@@ -1,7 +1,7 @@
 use ahash::AHashMap;
 use super::error::Error;
 use crate::lex::HashIdx;
-use std::os::unix::io::{ FromRawFd, RawFd, IntoRawFd };
+use std::os::unix::io::{ FromRawFd, IntoRawFd };
 use std::fs::File;
 
 pub struct Mem{
@@ -12,11 +12,12 @@ pub struct Mem{
     pub label_hash: AHashMap<String, usize>,
     label: Vec<usize>,
     jmp_stack: Vec<usize>,
-    pub fd: Vec<RawFd>,
+    pub fd: Vec<bool>,
 }
 
 impl Mem{
     pub fn new() -> Mem {
+        let fd_limit = 1024;
         let mut m = Mem {
             pmem: Vec::from([0.0; 10000]),
             nmem: Vec::with_capacity(10000),
@@ -25,13 +26,16 @@ impl Mem{
             label_hash: AHashMap::new(),
             label: Vec::with_capacity(100000),
             jmp_stack: Vec::with_capacity(10000),
-            fd: Vec::new(),
+            fd: vec![false; fd_limit],
         };
         m.nmem.push(0.0);
         unsafe {
-            m.fd.push(File::from_raw_fd(0).into_raw_fd());
-            m.fd.push(File::from_raw_fd(1).into_raw_fd());
-            m.fd.push(File::from_raw_fd(2).into_raw_fd());
+            File::from_raw_fd(0).into_raw_fd();
+            m.fd[0] = true;
+            File::from_raw_fd(1).into_raw_fd();
+            m.fd[1] = true;
+            File::from_raw_fd(2).into_raw_fd();
+            m.fd[2] = true;
         }
         m
     }

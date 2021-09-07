@@ -1,4 +1,4 @@
-#[derive(PartialEq, Debug)]
+#[derive(Debug)]
 pub enum Error{
     InvalidMemAccess(isize),  // idx: isize
     WriteToNMem(isize),  // idx: isize
@@ -17,4 +17,6 @@ pub enum Error{
     InvalidOutType(String),  // got: String
 
     BadFileDescriptor(std::os::unix::io::RawFd),  // fd tried to open
+    IoError(std::io::Error),  // returned from std::io functions
+    InvalidOpenOption(u64),  // o_val: u64
 }

@@ -1,14 +1,11 @@
-var:result,[0]
-var:sum,[1]
+# open file in write-only mode
+open:"text.txt",11010
 
-lbl:start
+# save fd opened by open
+mov:[1],[0]
 
-add:$sum,1
-mov:$sum,$result
+# write to file
+write:[1],"Hello World",11
 
-print_num:1,$sum
-write:1,"\n",1
-
-eq:$sum,100000
-skp:$result
-jmp:start
+# close file
+close:[1]

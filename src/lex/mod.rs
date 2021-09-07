@@ -211,8 +211,9 @@ fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str)
         }else if c == b' ' || c == b'\t' {
             if state == State::STARTED(false) {
                 state = State::ENDED;
+            }else if state != State::STARTED(true) {
+                continue;
             }
-            continue;
         }else if c == delim {
             match state {
                 State::WAITING => 
