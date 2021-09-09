@@ -82,7 +82,7 @@ close: fd(Value)
 print_num: fd(Value, val(Value)
 
 # extern
-src script_name:Ltl  # source another file, load labels and symbols, don't execute
+src: script_name(Sym)  # source another file, load labels and symbols, don't execute
 ```
 
 ## TODO

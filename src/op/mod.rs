@@ -68,6 +68,7 @@ mod logic;
 mod flow;
 mod sys;
 mod extra;
+mod r#extern;
 
 macro_rules! add_entry {
     ( $h:ident, $v:ident, $c:ident, $o:ident ) => {
@@ -112,6 +113,8 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
     add_entry!(h, v, sys, close);
     add_entry!(h, v, sys, read);
     add_entry!(h, v, sys, write);
+
+    add_entry!(h, v, r#extern, src);
 
     add_entry!(h, v, extra, print_num);
 }

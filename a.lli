@@ -10,11 +10,10 @@ add: $sum, 1
 # assign result to $sum
 mov: $sum, $result
 
+# print result
 print_num: 1, $sum
 write: 1, "\n", 1
 
 # while sum != 100000
 ne: $sum, 100000
 jmp: $result, start
-
-exit: 0
