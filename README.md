@@ -64,8 +64,7 @@ or: left(Value), right(Value)  # ||
 not: bool(Value)  # !
 
 # control flow
-skp: idx(Value) # tests idx and skips a line if true
-jmp: lbl(Sym)  # unconditional jump
+jmp: cond(Value), lbl(Sym)  # jump if cond is true
 lbl: lbl(Sym)  # set label. Label of same name stack up
 ret  # returns to the last jump label linenum+1
 
@@ -83,7 +82,7 @@ close: fd(Value)
 print_num: fd(Value, val(Value)
 
 # extern
-src script_name:Ltl  # source another file. creates a sparate memory map
+src script_name:Ltl  # source another file, load labels and symbols, don't execute
 ```
 
 ## TODO
@@ -99,7 +98,7 @@ src script_name:Ltl  # source another file. creates a sparate memory map
 
 - [ ] Create all the string literals during preprocessing
 
-- [ ] Fixed assert\_eq on `error::Error` in tests
+- [ ] Fix assert\_eq on `error::Error` in tests
 
 ## Implement note
 

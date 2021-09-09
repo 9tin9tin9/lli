@@ -10,11 +10,16 @@ pub enum Signal{
     SetLbl(usize),
     Jmp(usize),
     Ret,
-    Skp,
+    Src(String),
 }
 
 impl Signal{
-    pub fn respond(&self, m: &mut Mem, code: &mut Code) -> Result<(), Error>{
+    pub fn respond(
+        &self, 
+        m: &mut Mem, 
+        code: &mut Code, 
+        op_idx_table: &AHashMap<&'static str, usize>
+    ) -> Result<(), Error>{
         match *self {
             Signal::None => (),
             Signal::Jmp(idx) => {
@@ -31,9 +36,13 @@ impl Signal{
             Signal::SetLbl(label) => {
                 m.label_set(label, code.ptr()+1);
             },
-            Signal::Skp => {
-                code.ptr_incr();
-            },
+            Signal::Src(ref s) => {
+                crate::read_from_file(
+                    s,
+                    m,
+                    code,
+                    op_idx_table);
+            }
         };
         code.ptr_incr();
         Ok(())
@@ -94,7 +103,6 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
     add_entry!(h, v, logic, or);
     add_entry!(h, v, logic, not);
 
-    add_entry!(h, v, flow, skp);
     add_entry!(h, v, flow, jmp);
     add_entry!(h, v, flow, lbl);
     add_entry!(h, v, flow, ret);
@@ -106,62 +114,6 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
     add_entry!(h, v, sys, write);
 
     add_entry!(h, v, extra, print_num);
-}
-
-pub fn preprocess(
-    op_idx_table: &AHashMap<&'static str, usize>, 
-    m: &mut Mem, 
-    c: &mut Code,
-    mut t: Vec<Tok>
-    ) -> Result<(), Error>
-{
-    if t.len() == 0 {
-        return Ok(());
-    }
-    if let Tok::Sym(ref mut n) = t[0] {
-        let s: &str = &n.sym;
-        n.idx = c.func_idx_push(
-            match op_idx_table.get(s) {
-                Some(i) => *i,
-                None => return Err(Error::UnknownOp(s.to_string())),
-            });
-    }else{
-        return Err(Error::WrongTokTypeForOp(t[0].to_type_str()))
-    }
-    if let Tok::Sym(ref n) = t[0] {
-        match n.idx {
-            // jmp | lbl
-            20 | 21 => if let Tok::Sym(ref mut hi) = t[1] {
-                hi.idx = match m.label_hash.get(&hi.sym) {
-                    Some(i) => *i,
-                    None => {
-                        let idx = m.label_add(c.ptr()+1);
-                        m.label_hash.insert(hi.sym.to_owned(), idx);
-                        idx
-                    },
-                };
-            },
-            // var
-            3 => if let Tok::Sym(ref mut hi) = t[1] {
-                if let None = m.var_hash.get(&hi.sym) {
-                    hi.idx = m.var_add(0);
-                    m.var_hash.insert(hi.sym.to_owned(), hi.idx);
-                }
-            },
-            _ => (),
-        }
-    }
-    for a in &mut t[1..] {
-        if let Tok::Var(ref mut hi) = a {
-            hi.idx = match m.var_hash.get(&hi.sym) {
-                Some(i) => *i,
-                None => 
-                    return Err(Error::UndefinedVar(hi.sym.to_owned())),
-            }
-        }
-    }
-    c.push(t);
-    Ok(())
 }
 
 pub fn exec(func_vec: &[OpFunc], m: &mut Mem, c: &Code) -> Result<Signal, Error>{

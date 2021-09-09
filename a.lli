@@ -1,11 +1,20 @@
-# open file in write-only mode
-open:"text.txt",11010
+# initialise variables
+var: result, [0]
+var: sum, [1]
 
-# save fd opened by open
-mov:[1],[0]
+# start loop
+lbl: start
 
-# write to file
-write:[1],"Hello World",11
+# add 1 to sum
+add: $sum, 1
+# assign result to $sum
+mov: $sum, $result
 
-# close file
-close:[1]
+print_num: 1, $sum
+write: 1, "\n", 1
+
+# while sum != 100000
+ne: $sum, 100000
+jmp: $result, start
+
+exit: 0

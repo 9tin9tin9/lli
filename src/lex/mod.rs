@@ -196,7 +196,7 @@ fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str)
     #[derive(PartialEq)]
     enum State{
         WAITING,
-        STARTED(bool),  // bool for isStringLiteral
+        STARTED(bool),  // bool for isStringLiteral?
         ENDED,
     }
     let mut current = Vec::with_capacity(len);
@@ -211,6 +211,7 @@ fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str)
         }else if c == b' ' || c == b'\t' {
             if state == State::STARTED(false) {
                 state = State::ENDED;
+                // break;
             }else if state != State::STARTED(true) {
                 continue;
             }
