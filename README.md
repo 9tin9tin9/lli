@@ -94,9 +94,7 @@ src: script_name(Sym)  # source another file, load labels and symbols, don't exe
 
 - [ ] Write more tests
 
-- [ ] Read idx from Var num
-    - Idx of `$A` stores 10
-    - `[$A]` returns 10
+- [ ] Ptr to ptr??
 
 - [ ] Create all the string literals during preprocessing??
 
