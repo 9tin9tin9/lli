@@ -35,7 +35,7 @@ future reference for writing compiler: https://llvm.org/docs/tutorial/MyFirstLan
  
 ## Predefined Functions:
 
-```Python
+```bash
 # memory management
 mov: des(WPtr), src(Value)  # assignment, read value
 cpy: des(WPtr), src(Ptr), size(Value  # memcpy. When src = Ltl, a new ltl is created and its idx is used as src idx
@@ -94,7 +94,12 @@ src: script_name(Sym)  # source another file, load labels and symbols, don't exe
 
 - [ ] Write more tests
 
-- [ ] Ptr to ptr??
+- [ ] Ptr to ptr
+```bash
+var: $A, [10]
+mov: $A, 30
+mov: [$A], 100  # 100 is moved to [30]
+```
 
 - [ ] Create all the string literals during preprocessing??
 
