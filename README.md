@@ -65,7 +65,7 @@ not: bool(Value)  # !
 
 # control flow
 jmp: cond(Value), lbl(Sym)  # jump if cond is true
-lbl: lbl(Sym)  # set label. Label of same name stack up
+lbl: lbl(Sym)  # set label.
 ret  # returns to the last jump label linenum+1
 
 # sys
@@ -74,7 +74,7 @@ fork: ???
 # for read and write, [0] set to bytes read or wrote
 read: fd(Value), ptr(WPtr), size(Value)
 write: fd(Value), ptr(Ptr), size(Value)
-open: name(Ptr | Sym), access mode(Value)  # [0] sets to fd
+open: name(Ptr | Sym), option(Value)  # [0] sets to fd
 close: fd(Value)
 
 # extra
@@ -88,17 +88,17 @@ src: script_name(Sym)  # source another file, load labels and symbols, don't exe
 ## TODO
 - [x] Implement all the functions listed in Predefined Function Section (Will not implement fork in near future)
 
+- [x] Add comments
+
+- [ ] Fix assert\_eq on `error::Error` in tests
+
+- [ ] Write more tests
+
 - [ ] Read idx from Var num
     - Idx of `$A` stores 10
     - `[$A]` returns 10
 
-- [ ] Write more tests
-
-- [ ] Added comments
-
-- [ ] Create all the string literals during preprocessing
-
-- [ ] Fix assert\_eq on `error::Error` in tests
+- [ ] Create all the string literals during preprocessing??
 
 ## Implement note
 

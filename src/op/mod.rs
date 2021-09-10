@@ -19,21 +19,28 @@ impl Signal{
         m: &mut Mem, 
         code: &mut Code, 
         op_idx_table: &AHashMap<&'static str, usize>
-    ) -> Result<(), Error>{
+    ){
         match *self {
             Signal::None => (),
             Signal::Jmp(idx) => {
+                // simulate calling functions, 
+                // push line number before jump to stack.
+                // stack used by ret
                 m.jmp_stack_push(code.ptr());
+                // set which line to execute next
                 code.ptr_set(idx);
-                return Ok(());
+                return;
             },
             Signal::Ret => {
                 if let Some(ln) = m.jmp_stack_pop() {
                     code.ptr_set(ln+1);
-                    return Ok(());
+                    return;
                 }
             },
             Signal::SetLbl(label) => {
+                // Update line number for label. 
+                // Set to current line + 1 to prevent re-updating
+                // label each time jumping to this line and execute
                 m.label_set(label, code.ptr()+1);
             },
             Signal::Src(ref s) => {
@@ -45,7 +52,6 @@ impl Signal{
             }
         };
         code.ptr_incr();
-        Ok(())
     }
 }
 
@@ -72,7 +78,9 @@ mod r#extern;
 
 macro_rules! add_entry {
     ( $h:ident, $v:ident, $c:ident, $o:ident ) => {
+        // push function pointer
         $v.push($c::$o as OpFunc);
+        // add (op, func ptr) entry to hash table
         $h.insert(stringify!($o), $v.len()-1);
     };
 }
@@ -122,8 +130,12 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
 pub fn exec(func_vec: &[OpFunc], m: &mut Mem, c: &Code) -> Result<Signal, Error>{
     let v = c.curr().unwrap();
     if let Tok::Sym(ref hi) = v[0] {
+        // lookup function pointer and execute
         func_vec[hi.idx](&v[1..], m)
     }else{
+        // should not be executed 
+        // because there is already a type check during preprocess
+        // written just to let rustc to compile
         Err(Error::WrongTokTypeForOp(v[0].to_type_str()))
     }
 }

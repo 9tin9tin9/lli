@@ -8,6 +8,7 @@ fn parse_arg(v: &[Tok], m: &Mem) -> Result<(f64, f64), Error>{
         v[1].get_value(m)?))
 }
 
+// [0] is set as result
 macro_rules! math {
     ( $o:tt, $v:expr, $m:expr ) => {
         {
