@@ -41,8 +41,8 @@ fn or_false(){
 fn and_or_argc(){
     let v = vec![Tok::Num(0.0)];
     let mut m = Mem::new();
-    let r = super::and(&v, &mut m);
-    assert_eq!(r, Err(Error::WrongArgCount(2, 1)));
+    let r = super::and(&v, &mut m).unwrap_err();
+    assert_matches!(r, Error::WrongArgCount(2, 1));
 }
 
 #[test]

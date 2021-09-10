@@ -62,17 +62,17 @@ fn div_zero_by_zero(){
 fn add_incorrect_args_num(){
     let v = vec![Tok::Ltl("asdas".to_string()), Tok::Num(0.0), Tok::Ltl("asd".to_string())];
     let mut m = Mem::new();
-    let r = super::add(&v, &mut m);
-    assert_eq!(Err(Error::WrongArgCount(2, 3)), r);
+    let r = super::add(&v, &mut m).unwrap_err();
+    assert_matches!(Error::WrongArgCount(2, 3), r);
 }
 
 #[test]
 fn add_incorrect_args_type(){
     let v = vec![Tok::Ltl("asdas".to_string()), Tok::Ltl("asdasd".to_string())];
     let mut m = Mem::new();
-    let r = super::add(&v, &mut m);
-    assert_eq!(
-        Err(Error::WrongArgType(
+    let r = super::add(&v, &mut m).unwrap_err();
+    let expected = Error::WrongArgType(
             vec![Tok::NUM_STR, Tok::IDX_STR, Tok::VAR_STR], 
-            Tok::LTL_STR)), r);
+            Tok::LTL_STR);
+    assert_matches!(r, expected);
 }

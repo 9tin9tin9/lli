@@ -90,7 +90,7 @@ src: script_name(Sym)  # source another file, load labels and symbols, don't exe
 
 - [x] Add comments
 
-- [ ] Fix assert\_eq on `error::Error` in tests
+- [x] Fix assert\_eq on `error::Error` in tests (solved by using assert\_matches
 
 - [ ] Write more tests
 

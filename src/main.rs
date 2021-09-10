@@ -11,6 +11,8 @@ use mem::Mem;
 use code::Code;
 use lex::Tok;
 use error::Error;
+#[macro_use]
+extern crate matches;
 
 fn preprocess(
     op_idx_table: &AHashMap<&'static str, usize>, 

@@ -12,7 +12,7 @@ fn parse_statement_lookup_op(){
     let mut op_idx_table: AHashMap<&'static str, usize> = AHashMap::new();
     let mut func_vec: Vec<super::OpFunc> = Vec::new();
     super::init_op_table(&mut op_idx_table, &mut func_vec);
-    super::preprocess(&op_idx_table, &mut m, &mut c, t).unwrap();
+    crate::preprocess(&op_idx_table, &mut m, &mut c, t).unwrap();
     assert_eq!(super::exec(&mut func_vec, &mut m, &c).unwrap(), super::Signal::None);
 }
 
@@ -33,17 +33,18 @@ fn tok_read_value(){
 fn tok_read_value_invalid_memory_access(){
     let t = Tok::Idx(-1);
     let m = Mem::new();
-    assert_eq!(t.get_value(&m), Err(Error::InvalidMemAccess(-1)));
+    assert_matches!(t.get_value(&m), Err(Error::InvalidMemAccess(-1)));
 }
 
 #[test]
 fn tok_read_value_wrong_type(){
     let t = Tok::Eof;
     let m = Mem::new();
-    assert_eq!(t.get_value(&m), 
-        Err(Error::WrongArgType(
+    let got = t.get_value(&m).unwrap_err();
+    let expected = Error::WrongArgType(
                 vec![Tok::NUM_STR, Tok::IDX_STR, Tok::VAR_STR],
-                Tok::EOF_STR)));
+                Tok::EOF_STR);
+    assert_matches!(got, expected)
 }
 
 #[test]
@@ -62,11 +63,11 @@ fn tok_get_loc(){
 fn tok_get_loc_wrong_type(){
     let t = Tok::Eof;
     let mut m = Mem::new();
-    assert_eq!(
-        t.get_loc(&mut m), 
-        Err(Error::WrongArgType(
+    let got = t.get_loc(&mut m);
+    let expected = Error::WrongArgType(
                 vec![Tok::IDX_STR, Tok::VAR_STR, Tok::LTL_STR],
-                Tok::EOF_STR)));
+                Tok::EOF_STR);
+    assert_matches!(got, expected);
 }
 
 #[test]
@@ -81,9 +82,9 @@ fn tok_create_ltl(){
 fn tok_create_ltl_wrong_type(){
     let t = Tok::Eof;
     let mut m = Mem::new();
-    assert_eq!(
-        t.create_ltl(&mut m),
-        Err(Error::WrongArgType(
+    let got = t.create_ltl(&mut m);
+    let expected = Error::WrongArgType(
                 vec![Tok::LTL_STR],
-                Tok::EOF_STR)));
+                Tok::EOF_STR);
+    assert_matches!(got, expected);
 }
