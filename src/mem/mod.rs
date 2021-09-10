@@ -19,7 +19,7 @@ impl Mem{
     pub fn new() -> Mem {
         let fd_limit = 1024;
         let mut m = Mem {
-            pmem: Vec::from([0.0; 10000]),
+            pmem: vec![0.0; 10000],
             nmem: Vec::with_capacity(10000),
             var_hash: AHashMap::new(),
             var: Vec::with_capacity(100000),
