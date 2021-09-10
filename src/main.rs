@@ -56,7 +56,7 @@ fn preprocess(
     }else{
         return Err(Error::WrongTokTypeForOp(t[0].to_type_str()))
     }
-    // replace all symbols with sym idx
+    // replace all variables with var idx
     for a in &mut t[1..] {
         if let Tok::Var(ref mut hi) = a {
             hi.idx = match m.var_hash.get(&hi.sym) {
