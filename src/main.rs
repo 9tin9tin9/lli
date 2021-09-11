@@ -11,6 +11,7 @@ use mem::Mem;
 use code::Code;
 use lex::Tok;
 use error::Error;
+// used by tests
 #[macro_use]
 extern crate matches;
 
@@ -36,15 +37,17 @@ fn preprocess(
         // create symbol table
         match n.idx {
             // jmp | lbl
-            20 | 21 => if let Tok::Sym(ref mut hi) = t[1] {
-                hi.idx = match m.label_hash.get(&hi.sym) {
-                    Some(i) => *i,
-                    None => {
-                        let idx = m.label_add(c.len());
-                        m.label_hash.insert(hi.sym.to_owned(), idx);
-                        idx
-                    },
-                };
+            20 | 21 | 22 => for label in &mut t[1..] {
+                if let Tok::Sym(ref mut hi) = label {
+                    hi.idx = match m.label_hash.get(&hi.sym) {
+                        Some(i) => *i,
+                        None => {
+                            let idx = m.label_add(c.len());
+                            m.label_hash.insert(hi.sym.to_owned(), idx);
+                            idx
+                        },
+                    };
+                }
             },
             // var
             3 => if let Tok::Sym(ref mut hi) = t[1] {
@@ -79,8 +82,8 @@ fn read_from_file(
     op_idx_table: &AHashMap<&'static str, usize>, 
 ) {
     let file = File::open(file_name)
-                        .unwrap_or_else(|e|
-                            panic!("{:?}", e));
+                    .unwrap_or_else(|e|
+                        panic!("{:?}", e));
     let lines = io::BufReader::new(file).lines();
     for line in lines {
         match line {

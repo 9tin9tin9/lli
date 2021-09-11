@@ -8,6 +8,7 @@ use crate::error::Error;
 pub enum Signal{
     None,
     SetLbl(usize),
+    SetAls(usize, usize),
     Jmp(usize),
     Ret,
     Src(String),
@@ -43,6 +44,10 @@ impl Signal{
                 // label each time jumping to this line and execute
                 m.label_set(label, code.ptr()+1);
             },
+            Signal::SetAls(alias, loc) => {
+                // Update alias to loc
+                m.label_set(alias, loc);
+            }
             Signal::Src(ref s) => {
                 crate::read_from_file(
                     s,
@@ -114,6 +119,7 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
 
     add_entry!(h, v, flow, jmp);
     add_entry!(h, v, flow, lbl);
+    add_entry!(h, v, flow, als);
     add_entry!(h, v, flow, ret);
 
     add_entry!(h, v, sys, exit);
