@@ -20,17 +20,18 @@ future reference for writing compiler: https://llvm.org/docs/tutorial/MyFirstLan
 - Reserved symbols: `:,"[]$#`
 - Syntax of primitive Type:
     - Num: `-?[1-9][0-9]*(?:.[0-9]+)?`
-    - Idx: Positive integer wrapped in square brackets, no space
+    - Idx: 0 or Positive integer wrapped in square brackets, no space
     - Var: `$name`
+    - VarIdx: `[$name]`, no space inside brackets
     - Sym: `[^\s0-9$#"\[\]:,]+`
     - Ltl: String literal wrapped in double quotes
 - Args:
-    - Value: {Num, Idx, Var}
-    - Ptr: {Idx, Var, Ltl}
-    - Writable Ptr: {Idx, Var}
+    - Value: {Num, Idx, Var, VarIdx}
+    - Ptr: {Idx, Var, VarIdx, Ltl}
+    - Writable Ptr: ptr with positive index
         - Ltl returns negative ptr, which is unwritable
     - Symbol: {Sym}
-- Statement: `Func arg1 arg2 arg3...`
+- Statement: `Func: arg1, arg2, arg3...`
 - 1 line per statement
  
 ## Predefined Functions:
