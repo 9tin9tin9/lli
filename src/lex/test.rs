@@ -61,6 +61,14 @@ fn tokenize_var(){
 }
 
 #[test]
+fn tokenize_varidx(){
+    assert_eq!(
+        vec![Tok::Sym(HashIdx::from_str("Aasdasd")), 
+             Tok::VarIdx(HashIdx::from_str("casdasd"))],
+        tokenize(&"Aasdasd : [$casdasd] ".to_string()).unwrap());
+}
+
+#[test]
 fn tokenize_empty_token(){
     assert_eq!(
         Err("Empty token. Expects operator".to_string()),
@@ -146,6 +154,9 @@ fn get_loc(){
     let t = Tok::Var(HashIdx::new("A", 0));
     m.var_add(100);
     assert_eq!(t.get_loc(&mut m).unwrap(), 100);
+    m.mem_set(100, 30.0).unwrap();
+    let t = Tok::VarIdx(HashIdx::new("A", 0));
+    assert_eq!(t.get_loc(&mut m).unwrap(), 30);
     let t = Tok::Ltl("asda".to_string());
     assert_eq!(t.get_loc(&mut m).unwrap(), -1);
 }

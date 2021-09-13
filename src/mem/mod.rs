@@ -4,6 +4,7 @@ use crate::lex::HashIdx;
 use std::os::unix::io::{ FromRawFd, IntoRawFd };
 use std::fs::File;
 
+#[derive(Debug)]
 pub struct Mem{
     pmem: Vec<f64>,
     nmem: Vec<f64>,
@@ -39,7 +40,7 @@ impl Mem{
         }
         m
     }
-    pub fn mem_at(&self,i: isize) -> Result<f64, Error>{
+    pub fn mem_at(&self, i: isize) -> Result<f64, Error>{
         if i < 0 {
             self.nmem_at(-i as usize)
         }else{

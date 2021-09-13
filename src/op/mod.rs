@@ -93,6 +93,7 @@ macro_rules! add_entry {
 pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>){
     add_entry!(h, v, nop, nop);
 
+    // 1
     add_entry!(h, v, mem, mov);
     add_entry!(h, v, mem, cpy);
     add_entry!(h, v, mem, var);
@@ -100,28 +101,34 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
     add_entry!(h, v, mem, decr);
     add_entry!(h, v, mem, allc);
 
+    // 7
     add_entry!(h, v, math, add);
     add_entry!(h, v, math, sub);
     add_entry!(h, v, math, mul);
     add_entry!(h, v, math, div);
 
+    // 11
     v.push(math::r#mod as OpFunc);
-    h.insert("mod", v.len());
+    h.insert("mod", v.len()-1);
 
+    // 12
     add_entry!(h, v, cmp, eq);
     add_entry!(h, v, cmp, ne);
     add_entry!(h, v, cmp, gt);
     add_entry!(h, v, cmp, lt);
 
+    // 16
     add_entry!(h, v, logic, and);
     add_entry!(h, v, logic, or);
     add_entry!(h, v, logic, not);
 
+    //19 
     add_entry!(h, v, flow, jmp);
     add_entry!(h, v, flow, lbl);
     add_entry!(h, v, flow, als);
     add_entry!(h, v, flow, ret);
 
+    // 23
     add_entry!(h, v, sys, exit);
     add_entry!(h, v, sys, open);
     add_entry!(h, v, sys, close);

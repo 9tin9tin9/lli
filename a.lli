@@ -1,19 +1,25 @@
 # initialise variables
 var: result, [0]
-var: sum, [1]
+var: num, [2]
 
 # start loop
 lbl: start
 
-# add 1 to sum
-add: $sum, 1
-# assign result to $sum
-mov: $sum, $result
+# add 1 to num
+add: $num, 1
+# assign result to $num
+mov: $num, $result
 
-# print result
-print_num: 1, $sum
-write: 1, "\n", 1
+mod: $num, 2
+jmp: $result, print
 
-# while sum != 100000
-ne: $sum, 100000
+# while num != 100000
+ne: $num, 100000
 jmp: $result, start
+exit: 0
+
+# this does not work
+lbl: print
+print_num: 1, $num
+write: 1, "\n", 1
+ret

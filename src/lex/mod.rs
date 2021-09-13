@@ -27,6 +27,7 @@ pub enum Tok{
     Num(f64), 
     Idx(isize), 
     Var(HashIdx),
+    VarIdx(HashIdx),  // Ptr to ptr
     Ltl(String),
     Sym(HashIdx),  // includes label and operator
     Eof,
@@ -36,6 +37,7 @@ impl Tok{
     pub const NUM_STR : &'static str = "Num";
     pub const IDX_STR : &'static str = "Idx";
     pub const VAR_STR : &'static str = "Var";
+    pub const VARIDX_STR : &'static str = "VarIdx";
     pub const LTL_STR : &'static str = "Ltl";
     pub const SYM_STR : &'static str = "Sym";
     pub const EOF_STR : &'static str = "Eof";
@@ -45,6 +47,7 @@ impl Tok{
             Tok::Num(_) => Tok::NUM_STR,
             Tok::Idx(_) => Tok::IDX_STR,
             Tok::Var(_) => Tok::VAR_STR,
+            Tok::VarIdx(_) => Tok::VARIDX_STR,
             Tok::Ltl(_) => Tok::LTL_STR,
             Tok::Sym(_) => Tok::SYM_STR,
             Tok::Eof => Tok::EOF_STR,
@@ -56,6 +59,7 @@ impl Tok{
             Tok::Num(n) => format!("Num({})", n),
             Tok::Idx(i) => format!("Idx({})", i),
             Tok::Var(s) => format!("Var({})", s.sym),
+            Tok::VarIdx(s) => format!("VarIdx({})", s.sym),
             Tok::Ltl(s) => format!("Ltl({})", s),
             Tok::Sym(s) => format!("Sym({})", s.sym),
             Tok::Eof => "Eof".to_owned(),
@@ -77,17 +81,31 @@ impl Tok{
                     Err(e) => Err(e.to_string()),
                 }
             },
-            // Idx
+            // Idx | VarIdx
             b'[' => 
                 if vec[len-1] != b']' {
                     Err("Unterminated idx".to_string())
-                }else {
-                    let s = unsafe { 
-                        std::str::from_utf8_unchecked(vec) 
-                    };
-                    match s[1..len-1].parse::<isize>() {
-                        Ok(i) => Ok(Tok::Idx(i)),
-                        Err(e) => Err(e.to_string()),
+                }else if vec.len() == 2 {
+                    Err("Empty idx".to_string())
+                }else{
+                    // VarIdx
+                    if vec[1] == b'$' {
+                        if vec.len() == 3{
+                            return Err("Expects var name".to_string());
+                        }
+                        let s = unsafe {
+                            std::str::from_utf8_unchecked(&vec[2..len-1])
+                        };
+                        Ok(Tok::VarIdx(HashIdx::from_str(s)))
+                    }else {
+                    // Idx
+                        let s = unsafe { 
+                            std::str::from_utf8_unchecked(&vec[1..len-1]) 
+                        };
+                        match s.parse::<isize>() {
+                            Ok(i) => Ok(Tok::Idx(i)),
+                            Err(e) => Err(e.to_string()),
+                        }
                     }
                 },
             // Var
@@ -117,10 +135,18 @@ impl Tok{
     pub fn get_value(&self, m: &Mem) -> Result<f64, Error>{
         match self {
             Tok::Num(f) => Ok(*f),
-            Tok::Idx(i) =>
-                m.mem_at(*i),
-            Tok::Var(n) =>
-                m.mem_at(m.var_find(&n)?),
+            Tok::Idx(i) => m.mem_at(*i),
+            Tok::Var(n) => m.mem_at(m.var_find(n)?),
+            Tok::VarIdx(n) => {
+                // can't use 
+                //      m.mem_at(self.get_loc(m)?),
+                //  cuz m will then need to be changed to &mut Mem
+                let value = m.mem_at(m.var_find(n)?)?;
+                if value != value as isize as f64 {
+                    return Err(Error::NotInterger(value))
+                }
+                m.mem_at(value as isize)
+            },
             _ =>
                 Err(Error::WrongArgType(
                         vec![Tok::NUM_STR, Tok::IDX_STR, Tok::VAR_STR], 
@@ -130,17 +156,31 @@ impl Tok{
 
     pub fn get_uint(&self, m: &Mem) -> Result<u64, Error>{
         let float = self.get_value(m)?;
-        if float != (float as usize) as f64 {
-            return Err(Error::NegativeOrNonIntergerSize(float));
+        if float != (float as u64) as f64 {
+            return Err(Error::NegativeOrNotInterger(float));
         }
         Ok(float as u64)
+    }
+
+    pub fn get_int(&self, m: &Mem) -> Result<i64, Error>{
+        let float = self.get_value(m)?;
+        if float != (float as i64) as f64 {
+            return Err(Error::NotInterger(float));
+        }
+        Ok(float as i64)
     }
 
     pub fn get_loc(&self, m: &mut Mem) -> Result<isize, Error> {
         match self {
             Tok::Idx(i) => Ok(*i),
-            Tok::Var(n) =>
-                m.var_find(n),
+            Tok::Var(n) => m.var_find(n),
+            Tok::VarIdx(n) => {
+                let value = m.mem_at(m.var_find(n)?)?;
+                if value != value as isize as f64 {
+                    return Err(Error::NotInterger(value))
+                }
+                Ok(value as isize)
+            },
             Tok::Ltl(_) =>
                 self.create_ltl(m),
             _ =>

@@ -32,6 +32,13 @@ impl Code{
             Some(&self.code[i])
         }
     }
+    pub fn at_mut(&mut self, i: usize) -> Option<&mut Vec<Tok>>{
+        if i >= self.code.len() {
+            None
+        }else{
+            Some(&mut self.code[i])
+        }
+    }
     pub fn last(&self) -> Option<&[Tok]>{
         if self.code.len() == 0 {
             None

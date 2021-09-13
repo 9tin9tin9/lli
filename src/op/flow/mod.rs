@@ -6,7 +6,8 @@ use crate::mem::Mem;
 //      jmp: cond(Value), lbl(Sym)
 pub fn jmp(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     argc_guard!(v, 2);
-    if v[0].get_value(m)? != 0.0 {
+    let cond = v[0].get_value(m)?;
+    if cond != 0.0 {
         let label = v[1].get_sym()?;
         let loc = m.label_find(label)?;
         Ok(Signal::Jmp(loc))

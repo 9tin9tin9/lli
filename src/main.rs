@@ -15,17 +15,12 @@ use error::Error;
 #[macro_use]
 extern crate matches;
 
-fn preprocess(
+fn assign_opcode(
     op_idx_table: &AHashMap<&'static str, usize>, 
-    m: &mut Mem, 
     c: &mut Code,
-    mut t: Vec<Tok>
-    ) -> Result<(), Error>
+    t: &mut [Tok]
+) -> Result<usize, Error> 
 {
-    // skip empty lines
-    if t.len() == 0 {
-        return Ok(());
-    }
     if let Tok::Sym(ref mut n) = t[0] {
         // lookup and assign opcode
         let s: &str = &n.sym;
@@ -34,43 +29,88 @@ fn preprocess(
                 Some(i) => *i,
                 None => return Err(Error::UnknownOp(s.to_string())),
             });
-        // create symbol table
-        match n.idx {
-            // jmp | lbl
-            20 | 21 | 22 => for label in &mut t[1..] {
-                if let Tok::Sym(ref mut hi) = label {
-                    hi.idx = match m.label_hash.get(&hi.sym) {
-                        Some(i) => *i,
-                        None => {
-                            let idx = m.label_add(c.len());
-                            m.label_hash.insert(hi.sym.to_owned(), idx);
-                            idx
-                        },
-                    };
-                }
-            },
-            // var
-            3 => if let Tok::Sym(ref mut hi) = t[1] {
-                if let None = m.var_hash.get(&hi.sym) {
-                    hi.idx = m.var_add(0);
-                    m.var_hash.insert(hi.sym.to_owned(), hi.idx);
-                }
-            },
-            _ => (),
-        }
+        Ok(n.idx)
     }else{
         return Err(Error::WrongTokTypeForOp(t[0].to_type_str()))
     }
-    // replace all variables with var idx
-    for a in &mut t[1..] {
-        if let Tok::Var(ref mut hi) = a {
-            hi.idx = match m.var_hash.get(&hi.sym) {
+}
+
+fn create_symbol_table(
+    opcode: usize,
+    m: &mut Mem, 
+    c: &mut Code, 
+    t: &mut Vec<Tok>
+) -> Result<(), Error>
+{
+    match opcode {
+        // lbl | alias
+        20 | 21 => if let Tok::Sym(ref mut hi) = t[1] {
+            hi.idx = match m.label_hash.get(&hi.sym) {
                 Some(i) => *i,
-                None => 
-                    return Err(Error::UndefinedVar(hi.sym.to_owned())),
+                None => {
+                    let idx = m.label_add(c.len());
+                    m.label_hash.insert(hi.sym.to_owned(), idx);
+                    idx
+                },
+            };
+        },
+        // var
+        3 => if let Tok::Sym(ref mut hi) = t[1] {
+            if let None = m.var_hash.get(&hi.sym) {
+                hi.idx = m.var_add(0);
+                m.var_hash.insert(hi.sym.to_owned(), hi.idx);
+            }
+        },
+        _ => (),
+    };
+    Ok(())
+}
+
+// loop through all lines to replace symbols
+fn replace_sym(m: &Mem, c: &mut Code) -> Result<(), Error> {
+    for i in 0..c.len() {
+        let line = c.at_mut(i).unwrap();
+        if let Tok::Sym(ref hi) = line[0] {
+            match hi.idx {
+                // var | lbl
+                3 | 20 => (),
+                // jmp
+                19 | 21 => if let Tok::Sym(ref mut hi) = line[2] {
+                    hi.idx = match m.label_hash.get(&hi.sym) {
+                        Some(i) => *i,
+                        None =>
+                            return Err(Error::UnknownLabel(hi.sym.clone())),
+                    }
+                },
+                _ => for a in &mut line[1..] {
+                    // Var or VarIdx
+                    if let Tok::Var(ref mut hi) | Tok::VarIdx(ref mut hi) = a {
+                        hi.idx = match m.var_hash.get(&hi.sym) {
+                            Some(i) => *i,
+                            None => 
+                                return Err(Error::UndefinedVar(hi.sym.to_owned())),
+                        };
+                    }
+                },
             }
         }
     }
+    Ok(())
+}
+
+fn preprocess(
+    op_idx_table: &AHashMap<&'static str, usize>, 
+    m: &mut Mem, 
+    c: &mut Code,
+    mut t: Vec<Tok>
+) -> Result<(), Error> {
+    // skip empty lines
+    if t.len() == 0 {
+        return Ok(());
+    }
+    let opcode = assign_opcode(op_idx_table, c, &mut t)?;
+    // create symbol table
+    create_symbol_table(opcode, m, c, &mut t)?;
     c.push(t);
     Ok(())
 }
@@ -80,7 +120,7 @@ fn read_from_file(
     m: &mut Mem, 
     code: &mut Code, 
     op_idx_table: &AHashMap<&'static str, usize>, 
-) {
+) -> Result<(), Error> {
     let file = File::open(file_name)
                     .unwrap_or_else(|e|
                         panic!("{:?}", e));
@@ -95,6 +135,7 @@ fn read_from_file(
             Err(e) => panic!("{}", e),
         };
     }
+    replace_sym(m, code)
 }
 
 fn main() {
@@ -107,7 +148,7 @@ fn main() {
     let mut op_idx_table: AHashMap<&'static str, usize> = AHashMap::new();
     let mut op_vec: Vec<op::OpFunc> = Vec::new();
     op::init_op_table(&mut op_idx_table, &mut op_vec);
-    read_from_file(&args[1], &mut m, &mut code, &mut op_idx_table);
+    read_from_file(&args[1], &mut m, &mut code, &mut op_idx_table).unwrap();
     while code.ptr() < code.len() {
         op::exec(&op_vec, &mut m, &code)
             .unwrap()
