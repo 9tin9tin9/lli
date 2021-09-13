@@ -96,7 +96,7 @@ src: script_name(Sym)  # source another file, load labels and symbols, don't exe
 
 - [ ] Write more tests
 
-- [ ] Ptr to ptr
+- [x] Ptr to ptr
 ```bash
 var: $A, [10]
 mov: $A, 30
@@ -104,6 +104,8 @@ mov: [$A], 100  # 100 is moved to [30]
 ```
 
 - [ ] Create all the string literals during preprocessing??
+
+- [ ] Entry point
 
 ## Implement note
 
