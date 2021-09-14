@@ -105,7 +105,7 @@ mov: [$A], 100  # 100 is moved to [30]
 
 - [ ] Create all the string literals during preprocessing??
 
-- [ ] Entry point
+- [ ] Fix error report
 
 ## Implement note
 
