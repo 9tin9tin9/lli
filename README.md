@@ -65,10 +65,10 @@ or: left(Value), right(Value)  # ||
 not: bool(Value)  # !
 
 # control flow
-jmp: cond(Value), lbl(Sym)  # jump if cond is true
+jmp: lbl(Sym)  # unconditional jmp
+jc: cond(Value), lbl(Sym)  # jump if cond is true
 lbl: lbl(Sym)  # set label.
 als: als(Sym) lbl(Sym)  # set alias. als = lbl
-ret  # returns to the last jump label linenum+1
 
 # sys
 exit: exit_code(Value)

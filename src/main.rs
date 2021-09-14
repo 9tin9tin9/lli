@@ -44,7 +44,7 @@ fn create_symbol_table(
 {
     match opcode {
         // lbl | alias
-        20 | 21 => if let Tok::Sym(ref mut hi) = t[1] {
+        21 | 22 => if let Tok::Sym(ref mut hi) = t[1] {
             hi.idx = match m.label_hash.get(&hi.sym) {
                 Some(i) => *i,
                 None => {
@@ -66,6 +66,17 @@ fn create_symbol_table(
     Ok(())
 }
 
+fn replabe_lbl(tok: &mut Tok, m: &Mem)  -> Result<(), Error>{
+    if let Tok::Sym(ref mut hi) = tok {
+        hi.idx = match m.label_hash.get(&hi.sym) {
+            Some(i) => *i,
+            None =>
+                return Err(Error::UnknownLabel(hi.sym.clone())),
+        }
+    }
+    Ok(())
+}
+
 // loop through all lines to replace symbols
 fn replace_sym(m: &Mem, c: &mut Code) -> Result<(), Error> {
     for i in 0..c.len() {
@@ -73,15 +84,12 @@ fn replace_sym(m: &Mem, c: &mut Code) -> Result<(), Error> {
         if let Tok::Sym(ref hi) = line[0] {
             match hi.idx {
                 // var | lbl
-                3 | 20 => (),
+                3 | 21 => (),
                 // jmp
-                19 | 21 => if let Tok::Sym(ref mut hi) = line[2] {
-                    hi.idx = match m.label_hash.get(&hi.sym) {
-                        Some(i) => *i,
-                        None =>
-                            return Err(Error::UnknownLabel(hi.sym.clone())),
-                    }
-                },
+                19 => replabe_lbl(&mut line[1], m)?,
+                // jc | als
+                20 | 22 => replabe_lbl(&mut line[2], m)?,
+
                 _ => for a in &mut line[1..] {
                     // Var or VarIdx
                     if let Tok::Var(ref mut hi) | Tok::VarIdx(ref mut hi) = a {
@@ -138,10 +146,10 @@ fn read_from_file(
     replace_sym(m, code)
 }
 
-fn main() {
+fn main() -> Result<(), Error>{
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
-        return;
+        return Ok(());
     }
     let mut m = mem::Mem::new();
     let mut code = code::Code::new();
@@ -152,6 +160,7 @@ fn main() {
     while code.ptr() < code.len() {
         op::exec(&op_vec, &mut m, &code)
             .unwrap()
-            .respond(&mut m, &mut code, &op_idx_table);
+            .respond(&mut m, &mut code, &op_idx_table)?;
     };
+    Ok(())
 }

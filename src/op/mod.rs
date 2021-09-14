@@ -10,7 +10,6 @@ pub enum Signal{
     SetLbl(usize),
     SetAls(usize, usize),
     Jmp(usize),
-    Ret,
     Src(String),
 }
 
@@ -20,7 +19,7 @@ impl Signal{
         m: &mut Mem, 
         code: &mut Code, 
         op_idx_table: &AHashMap<&'static str, usize>
-    ){
+    ) -> Result<(), Error>{
         match *self {
             Signal::None => (),
             Signal::Jmp(idx) => {
@@ -30,13 +29,7 @@ impl Signal{
                 m.jmp_stack_push(code.ptr());
                 // set which line to execute next
                 code.ptr_set(idx);
-                return;
-            },
-            Signal::Ret => {
-                if let Some(ln) = m.jmp_stack_pop() {
-                    code.ptr_set(ln+1);
-                    return;
-                }
+                return Ok(());
             },
             Signal::SetLbl(label) => {
                 // Update line number for label. 
@@ -53,10 +46,11 @@ impl Signal{
                     s,
                     m,
                     code,
-                    op_idx_table);
+                    op_idx_table)?;
             }
         };
         code.ptr_incr();
+        Ok(())
     }
 }
 
@@ -124,9 +118,9 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
 
     //19 
     add_entry!(h, v, flow, jmp);
+    add_entry!(h, v, flow, jc);
     add_entry!(h, v, flow, lbl);
     add_entry!(h, v, flow, als);
-    add_entry!(h, v, flow, ret);
 
     // 23
     add_entry!(h, v, sys, exit);

@@ -2,9 +2,18 @@ use super::*;
 use crate::lex::Tok;
 use crate::mem::Mem;
 
-// jump if cond is true
-//      jmp: cond(Value), lbl(Sym)
+// unconditional jump
+//      jmp: lbl(Sym)
 pub fn jmp(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
+    argc_guard!(v, 1);
+    let label = v[0].get_sym()?;
+    let loc = m.label_find(label)?;
+    Ok(Signal::Jmp(loc))
+}
+
+// jump if cond is true
+//      jc: cond(Value), lbl(Sym)
+pub fn jc(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     argc_guard!(v, 2);
     let cond = v[0].get_value(m)?;
     if cond != 0.0 {
@@ -35,13 +44,6 @@ pub fn als(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     let label = v[1].get_sym()?;
     let loc = m.label_find(label)?;
     Ok(Signal::SetAls(alias.idx, loc))
-}
-
-// returns to the last jump label line num+1
-//      ret: (no argg)
-pub fn ret(v: &[Tok], _: &mut Mem) -> Result<Signal, Error>{
-    argc_guard!(v, 0);
-    Ok(Signal::Ret)
 }
 
 #[cfg(test)]

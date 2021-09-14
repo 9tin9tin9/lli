@@ -2,6 +2,14 @@
 var: result, [0]
 var: num, [2]
 
+# entry point
+jmp: main
+lbl: main_end
+exit: 0
+
+# main function
+lbl: main
+
 # start loop
 lbl: start
 
@@ -10,16 +18,13 @@ add: $num, 1
 # assign result to $num
 mov: $num, $result
 
-mod: $num, 2
-jmp: $result, print
+# print num
+print_num: 1, $num
+write: 1, "\n", 1
 
 # while num != 100000
 ne: $num, 100000
-jmp: $result, start
-exit: 0
+jc: $result, start
 
-# this does not work
-lbl: print
-print_num: 1, $num
-write: 1, "\n", 1
-ret
+# end main
+jmp: main_end
