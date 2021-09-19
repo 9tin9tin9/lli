@@ -109,6 +109,8 @@ mov: [$A], 100  # 100 is moved to [30]
 
 - [ ] Write Error variants for lex errors to replace String
 
+- [ ] Move argc check to preprocess time
+
 ## Implement note
 
 As the interpreter performs read write directly on file descriptor, the mutex added by rust on stdout and stdin are bypassed. Mutex or related things should be added manually if multithreading is to be implemented in the future.
