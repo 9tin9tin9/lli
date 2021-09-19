@@ -130,26 +130,37 @@ fn read_from_file(
     op_idx_table: &AHashMap<&'static str, usize>, 
 ) -> Result<(), Error> {
     let file = File::open(file_name)
-                    .unwrap_or_else(|e|
-                        panic!("{:?}", e));
+                    .unwrap_or_else(|e| {
+                        eprintln!("{}", e);
+                        std::process::exit(1);
+                    });
     let lines = io::BufReader::new(file).lines();
     for line in lines {
         match line {
             Ok(s) => {
-                let t = lex::tokenize(&s).unwrap();
+                let t = match lex::tokenize(&s){
+                    Ok(t) => t,
+                    Err(s) => { 
+                        eprintln!("{}", s);
+                        std::process::exit(1);
+                    },
+                };
                 // preprocess and push t to code
                 preprocess(op_idx_table, m, code, t).unwrap();
             },
-            Err(e) => panic!("{}", e),
+            Err(e) => {
+                eprintln!("{}", e);
+                std::process::exit(1);
+            },
         };
     }
     replace_sym(m, code)
 }
 
-fn main() -> Result<(), Error>{
+fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
-        return Ok(());
+        return;
     }
     let mut m = mem::Mem::new();
     let mut code = code::Code::new();
@@ -158,9 +169,16 @@ fn main() -> Result<(), Error>{
     op::init_op_table(&mut op_idx_table, &mut op_vec);
     read_from_file(&args[1], &mut m, &mut code, &mut op_idx_table).unwrap();
     while code.ptr() < code.len() {
+        // the 2 unwrap_or_else closures have different return value
         op::exec(&op_vec, &mut m, &code)
-            .unwrap()
-            .respond(&mut m, &mut code, &op_idx_table)?;
+            .unwrap_or_else(|e| {
+                e.print(1);
+                std::process::exit(1);
+            })
+            .respond(&mut m, &mut code, &op_idx_table)
+            .unwrap_or_else(|e| {
+                e.print(1);
+                std::process::exit(1);
+            })
     };
-    Ok(())
 }

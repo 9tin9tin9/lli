@@ -105,7 +105,9 @@ mov: [$A], 100  # 100 is moved to [30]
 
 - [ ] Create all the string literals during preprocessing??
 
-- [ ] Fix error report
+- [x] Fix error report
+
+- [ ] Write Error variants for lex errors to replace String
 
 ## Implement note
 
