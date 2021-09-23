@@ -107,7 +107,7 @@ mov: [$A], 100  # 100 is moved to [30]
 
 - [x] Fix error report
 
-- [ ] Write Error variants for lex errors to replace String
+- [x] Write Error variants for lex errors to replace String
 
 - [ ] Move argc check to preprocess time
 

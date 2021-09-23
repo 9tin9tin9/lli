@@ -8,7 +8,6 @@ fn jmp(){
     let mut code = Code::new();
     let mut mem = Mem::new();
     let v1 = vec![
-        Tok::Num(1.0),
         Tok::Sym(HashIdx::new("L", 0))];
     let v2 = vec![Tok::Num(10.0), Tok::Num(10.0)];
     code.push(v1.clone());

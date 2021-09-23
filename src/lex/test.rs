@@ -1,4 +1,5 @@
 use super::*;
+use crate::Error;
 
 #[test]
 fn tokenize_sym(){
@@ -17,9 +18,10 @@ fn tokenize_num(){
              Tok::Num(-10.0234f64), 
              Tok::Sym(HashIdx::from_str("c"))],
         tokenize(&"A: -10.0234 , c ".to_string()).unwrap());
-    assert_ne!(
-        Ok(Vec::new()),
-        tokenize(&"A: -10.02.34 , c ".to_string()));
+    let r = tokenize(&"A: -10.02.34 , c ".to_string());
+    assert_matches!(
+        Error::ParseNumError("-10.02.34".parse::<f64>().unwrap_err()),
+        r);
 }
 
 #[test]
@@ -38,12 +40,14 @@ fn tokenize_idx(){
              Tok::Idx(-123), 
              Tok::Sym(HashIdx::from_str("casdasd"))],
         tokenize(&"Aasdasd : [-123] ,casdasd ".to_string()).unwrap());
-    assert_ne!(
-        Ok(Vec::new()),
-        tokenize(&"A : [asd], cd ".to_string()));
-    assert_ne!(
-        Ok(Vec::new()),
-        tokenize(&"A : [-123.1] , cd ".to_string()));
+    let r = tokenize(&"A : [asd], cd ".to_string());
+    assert_matches!(
+        Error::ParseIdxError("asd".parse::<isize>().unwrap_err()),
+        r);
+    let r = tokenize(&"A : [-123.1] , cd ".to_string());
+    assert_matches!(
+        Error::ParseIdxError("-123.1".parse::<isize>().unwrap_err()),
+        r);
 }
 
 #[test]
@@ -70,12 +74,14 @@ fn tokenize_varidx(){
 
 #[test]
 fn tokenize_empty_token(){
-    assert_eq!(
-        Err("Empty token. Expects operator".to_string()),
-        tokenize(&" : ".to_string()));
-    assert_eq!(
-        Err("Empty token. Expects argument".to_string()),
-        tokenize(&"A : , ".to_string()));
+    let r = tokenize(&" : ".to_string()).unwrap_err();
+    assert_matches!(
+        Error::EmptyToken,
+        r);
+    let r = tokenize(&"A : , ".to_string()).unwrap_err();
+    assert_matches!(
+        Error::EmptyToken,
+        r);
 }
 
 #[test]
@@ -87,32 +93,38 @@ fn tokenize_op_only(){
 
 #[test]
 fn tokenize_op_err(){
-    assert_eq!(
-        Err("Expects symbol as operator".to_string()),
-        tokenize(&"123 ".to_string()));
-    assert_eq!(
-        Err("Expects symbol as operator".to_string()),
-        tokenize(&"[-123] ".to_string()));
-    assert_eq!(
-        Err("Expects symbol as operator".to_string()),
-        tokenize(&"$asd ".to_string()));
+    let r = tokenize(&"123 ".to_string()).unwrap_err();
+    assert_matches!(
+        Error::WrongTokTypeForOp(Tok::NUM_STR),
+        r);
+    let r = tokenize(&"[-123] ".to_string()).unwrap_err();
+    assert_matches!(
+        Error::WrongTokTypeForOp(Tok::IDX_STR),
+        r);
+    let r = tokenize(&"$asd ".to_string()).unwrap_err();
+    assert_matches!(
+        Error::WrongTokTypeForOp(Tok::VAR_STR),
+        r);
 }
 
 #[test]
 fn tokenize_non_delim_after_sym_end(){
-    assert_eq!(
-        Err("Found non-delimeter after symbol ends".to_string()),
-        tokenize(&"asd 2 ".to_string()));
+    let r = tokenize(&"asd 2 ".to_string()).unwrap_err();
+    assert_matches!(
+        Error::NonDelimAfterSymEnd('2'),
+        r);
 }
 
 #[test]
 fn tokenize_unexpected(){
-    assert_eq!(
-        Err("Unexpected ','".to_string()),
-        tokenize(&"asd , asd ".to_string()));
-    assert_eq!(
-        Err("Unexpected ':'".to_string()),
-        tokenize(&"asd : asd: ".to_string()));
+    let r = tokenize(&"asd , asd ".to_string()).unwrap_err();
+    assert_matches!(
+        Error::UnexpectedChar(','),
+        r);
+    let r = tokenize(&"asd : asd :".to_string()).unwrap_err();
+    assert_matches!(
+        Error::UnexpectedChar(':'),
+        r);
 }
 
 #[test]
