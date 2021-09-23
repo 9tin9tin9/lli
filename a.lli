@@ -19,8 +19,8 @@ add: $num, 1
 mov: $num, $result
 
 # print num
-# print_num: 1, $num
-# write: 1, "\n", 1
+print_num: 1, $num
+write: 1, "\n", 1
 
 # while num != 100000
 ne: $num, 100000

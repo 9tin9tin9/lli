@@ -15,6 +15,8 @@ use error::Error;
 #[macro_use]
 extern crate matches;
 
+static ERROR_MSG_LEVEL: usize = 1;
+
 fn assign_opcode(
     op_idx_table: &AHashMap<&'static str, usize>, 
     c: &mut Code,
@@ -140,8 +142,8 @@ fn read_from_file(
             Ok(s) => {
                 let t = match lex::tokenize(&s){
                     Ok(t) => t,
-                    Err(s) => { 
-                        eprintln!("{}", s);
+                    Err(e) => { 
+                        e.print(ERROR_MSG_LEVEL);
                         std::process::exit(1);
                     },
                 };
@@ -172,7 +174,7 @@ fn main() {
         // the 2 unwrap_or_else closures have different return value
         op::exec(&op_vec, &mut m, &code)
             .unwrap_or_else(|e| {
-                e.print(1);
+                e.print(ERROR_MSG_LEVEL);
                 std::process::exit(1);
             })
             .respond(&mut m, &mut code, &op_idx_table)

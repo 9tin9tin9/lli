@@ -65,7 +65,7 @@ impl Tok{
             Tok::Eof => "Eof".to_owned(),
         }
     }
-    fn from_u8(vec: &[u8]) -> Result<Tok, String> {
+    fn from_u8(vec: &[u8]) -> Result<Tok, Error> {
         let len = vec.len();
         if len == 0 {
             return Ok(Tok::Eof);
@@ -78,20 +78,20 @@ impl Tok{
                 };
                 match s.parse::<f64>() {
                     Ok(f) => Ok(Tok::Num(f)),
-                    Err(e) => Err(e.to_string()),
+                    Err(e) => Err(Error::ParseNumError(e)),
                 }
             },
             // Idx | VarIdx
             b'[' => 
                 if vec[len-1] != b']' {
-                    Err("Unterminated idx".to_string())
+                    Err(Error::UnterminatedIdx)
                 }else if vec.len() == 2 {
-                    Err("Empty idx".to_string())
+                    Err(Error::EmptyIdx)
                 }else{
                     // VarIdx
                     if vec[1] == b'$' {
                         if vec.len() == 3{
-                            return Err("Expects var name".to_string());
+                            return Err(Error::MissingVarName);
                         }
                         let s = unsafe {
                             std::str::from_utf8_unchecked(&vec[2..len-1])
@@ -104,7 +104,7 @@ impl Tok{
                         };
                         match s.parse::<isize>() {
                             Ok(i) => Ok(Tok::Idx(i)),
-                            Err(e) => Err(e.to_string()),
+                            Err(e) => Err(Error::ParseIdxError(e)),
                         }
                     }
                 },
@@ -230,8 +230,8 @@ impl Tok{
 
 }
 
-fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str) 
-    -> Result<(Tok, usize), String> 
+fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8)
+    -> Result<(Tok, usize), Error> 
 {
     #[derive(PartialEq)]
     enum State{
@@ -259,7 +259,7 @@ fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str)
         }else if c == delim {
             match state {
                 State::WAITING => 
-                    return Err(format!("Empty token. {}", msg)),
+                    return Err(Error::EmptyToken),
                 State::STARTED(false) | State::ENDED =>
                     break,
                 State::STARTED(true) => (),
@@ -268,10 +268,10 @@ fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str)
             match state {
                 State::STARTED(true) => (),
                 _ =>
-                    return Err(format!("Unexpected '{}'", unexpct as char)),
+                    return Err(Error::UnexpectedChar(unexpct as char)),
             }
         }else if state == State::ENDED {
-            return Err("Found non-delimeter after symbol ends".to_string());
+            return Err(Error::NonDelimAfterSymEnd(c as char));
         }else if c == b'"'{
             match state {
                 State::WAITING => 
@@ -281,7 +281,7 @@ fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str)
                         state = State::ENDED;
                     },
                 _ => 
-                    return Err("double quote should either appear at the beginning or at the end of token".to_string()),
+                    return Err(Error::DoubleQuoteInMiddle),
             }
         }else if c == b'\\' {
             if state == State::STARTED(true) {
@@ -297,7 +297,7 @@ fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str)
             c = match c {
                 b'n' => b'\n',
                 b't' => b'\t',
-                _ => return Err("Unkown escape sequence".to_string()),
+                _ => return Err(Error::UnknownEscapeSequence(c as char)),
             }
         }
         escaped = false;
@@ -307,15 +307,15 @@ fn eat_token(it: &[u8], len: usize, delim: u8, unexpct: u8, msg: &str)
     Ok((tok?, len))
 }
 
-fn eat_operator(slice: &[u8], len: usize) -> Result<(Tok, usize), String> {
-    eat_token(slice, len, b':', b',', "Expects operator")
+fn eat_operator(slice: &[u8], len: usize) -> Result<(Tok, usize), Error>  {
+    eat_token(slice, len, b':', b',')
 }
 
-fn eat_args(slice: &[u8], len: usize) -> Result<(Tok, usize), String> {
-    eat_token(slice, len, b',', b':', "Expects argument")
+fn eat_args(slice: &[u8], len: usize) -> Result<(Tok, usize), Error>  {
+    eat_token(slice, len, b',', b':')
 }
 
-pub fn tokenize(line: &str) -> Result<Vec<Tok>, String>{
+pub fn tokenize(line: &str) -> Result<Vec<Tok>, Error>{
     let mut v : Vec<Tok> = Vec::with_capacity(5);
     let bytes = line.as_bytes();
     let len = line.len();
@@ -329,7 +329,7 @@ pub fn tokenize(line: &str) -> Result<Vec<Tok>, String>{
         Tok::Eof =>
             return Ok(v),
         _ => 
-            return Err("Expects symbol as operator".to_string()),
+            return Err(Error::WrongTokTypeForOp(op.to_type_str())),
     });
     // args
     loop {
