@@ -23,10 +23,6 @@ impl Signal{
         match *self {
             Signal::None => (),
             Signal::Jmp(idx) => {
-                // simulate calling functions, 
-                // push line number before jump to stack.
-                // stack used by ret
-                m.jmp_stack_push(code.ptr());
                 // set which line to execute next
                 code.ptr_set(idx);
                 return Ok(());

@@ -12,7 +12,6 @@ pub struct Mem{
     var: Vec<isize>,
     pub label_hash: AHashMap<String, usize>,
     label: Vec<usize>,
-    jmp_stack: Vec<usize>,
     pub fd: Vec<bool>,
 }
 
@@ -26,7 +25,6 @@ impl Mem{
             var: Vec::with_capacity(100000),
             label_hash: AHashMap::new(),
             label: Vec::with_capacity(100000),
-            jmp_stack: Vec::with_capacity(10000),
             fd: vec![false; fd_limit],
         };
         m.nmem.push(0.0);
@@ -141,12 +139,6 @@ impl Mem{
             Some(i) => Ok(*i),
             None => Err(Error::UnknownLabel(hi.sym.to_string())),
         }
-    }
-    pub fn jmp_stack_push(&mut self, ln: usize) {
-        self.jmp_stack.push(ln);
-    }
-    pub fn jmp_stack_pop(&mut self) -> Option<usize> {
-        self.jmp_stack.pop()
     }
 }
 
