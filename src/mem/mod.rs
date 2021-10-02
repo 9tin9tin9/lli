@@ -110,8 +110,6 @@ impl Mem{
         let mut v : Vec<u8> = Vec::new();
         let mut zero_count = 0;
         let mut i = i;
-        let next = |i: &mut isize|
-            idx_incr(i, 1);
         loop {
             let c = self.mem_at(i)?;
             if c == 0.0 {
@@ -124,7 +122,7 @@ impl Mem{
                 zero_count = 0;
             }
             v.push(c as u8);
-            next(&mut i);
+            idx_incr(&mut i, 1);
         }
     }
     pub fn label_add(&mut self, line: usize) -> usize{

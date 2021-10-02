@@ -159,6 +159,27 @@ fn read_from_file(
     replace_sym(m, code)
 }
 
+fn run(
+    m: &mut Mem, 
+    code: &mut Code, 
+    op_idx_table: &AHashMap<&'static str, usize>, 
+    op_vec: &[op::OpFunc]
+){
+    while code.ptr() < code.len() {
+        // the 2 unwrap_or_else closures have different return value
+        op::exec(op_vec, m, code)
+            .unwrap_or_else(|e| {
+                e.print(ERROR_MSG_LEVEL);
+                std::process::exit(1);
+            })
+            .respond(m, code, op_idx_table)
+            .unwrap_or_else(|e| {
+                e.print(1);
+                std::process::exit(1);
+            })
+    };
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
@@ -168,19 +189,8 @@ fn main() {
     let mut code = code::Code::new();
     let mut op_idx_table: AHashMap<&'static str, usize> = AHashMap::new();
     let mut op_vec: Vec<op::OpFunc> = Vec::new();
+
     op::init_op_table(&mut op_idx_table, &mut op_vec);
     read_from_file(&args[1], &mut m, &mut code, &mut op_idx_table).unwrap();
-    while code.ptr() < code.len() {
-        // the 2 unwrap_or_else closures have different return value
-        op::exec(&op_vec, &mut m, &code)
-            .unwrap_or_else(|e| {
-                e.print(ERROR_MSG_LEVEL);
-                std::process::exit(1);
-            })
-            .respond(&mut m, &mut code, &op_idx_table)
-            .unwrap_or_else(|e| {
-                e.print(1);
-                std::process::exit(1);
-            })
-    };
+    run(&mut m, &mut code, &op_idx_table, &op_vec);
 }
