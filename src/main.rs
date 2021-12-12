@@ -58,9 +58,13 @@ fn create_symbol_table(
         },
         // var
         3 => if let Tok::Sym(ref mut hi) = t[1] {
-            if let None = m.var_hash.get(&hi.sym) {
-                hi.idx = m.var_add(0);
-                m.var_hash.insert(hi.sym.to_owned(), hi.idx);
+            hi.idx = match m.var_hash.get(&hi.sym) {
+                Some(i) => *i,
+                None => {
+                    let idx = m.var_add(0);
+                    m.var_hash.insert(hi.sym.to_owned(), idx);
+                    idx
+                }
             }
         },
         _ => (),
@@ -68,7 +72,7 @@ fn create_symbol_table(
     Ok(())
 }
 
-fn replabe_lbl(tok: &mut Tok, m: &Mem)  -> Result<(), Error>{
+fn replace_lbl(tok: &mut Tok, m: &Mem)  -> Result<(), Error>{
     if let Tok::Sym(ref mut hi) = tok {
         hi.idx = match m.label_hash.get(&hi.sym) {
             Some(i) => *i,
@@ -88,9 +92,9 @@ fn replace_sym(m: &Mem, c: &mut Code) -> Result<(), Error> {
                 // var | lbl
                 3 | 21 => (),
                 // jmp
-                19 => replabe_lbl(&mut line[1], m)?,
+                19 => replace_lbl(&mut line[1], m)?,
                 // jc | als
-                20 | 22 => replabe_lbl(&mut line[2], m)?,
+                20 | 22 => replace_lbl(&mut line[2], m)?,
 
                 _ => for a in &mut line[1..] {
                     // Var or VarIdx
@@ -174,7 +178,7 @@ fn run(
             })
             .respond(m, code, op_idx_table)
             .unwrap_or_else(|e| {
-                e.print(1);
+                e.print(ERROR_MSG_LEVEL);
                 std::process::exit(1);
             })
     };
@@ -191,6 +195,10 @@ fn main() {
     let mut op_vec: Vec<op::OpFunc> = Vec::new();
 
     op::init_op_table(&mut op_idx_table, &mut op_vec);
-    read_from_file(&args[1], &mut m, &mut code, &mut op_idx_table).unwrap();
+    read_from_file(&args[1], &mut m, &mut code, &mut op_idx_table)
+        .unwrap_or_else(|e| {
+            e.print(ERROR_MSG_LEVEL);
+            std::process::exit(1);
+    });
     run(&mut m, &mut code, &op_idx_table, &op_vec);
 }

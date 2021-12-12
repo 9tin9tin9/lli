@@ -41,8 +41,8 @@ future reference for writing compiler: https://llvm.org/docs/tutorial/MyFirstLan
 mov: des(WPtr), src(Value)  # assignment, read value
 cpy: des(WPtr), src(Ptr), size(Value  # memcpy. When src = Ltl, a new ltl is created and its idx is used as src idx
 var: name(Sym), idx(Ptr)  # Creates or update $name with index = idx
-incr: var(Var), num(Value)  # Used to iterate->read/write pmem, potentially can be used to do stack operations
-decr: var(Var), num(Value)  # Used to iterate->read nmem
+incr: var(Sym), num(Value)  # Used to iterate->read/write pmem, potentially can be used to do stack operations. var(Sym) has to be declared before
+decr: var(Sym), num(Value)  # Used to iterate->read nmem
 allc: size(Value)  # Push slots to pmem
 
 # maths, [0] is set as result

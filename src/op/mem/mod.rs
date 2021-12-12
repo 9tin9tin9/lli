@@ -41,7 +41,7 @@ macro_rules! mut_var_idx {
     ( $v:expr, $m:expr, $a:ident ) => {
         argc_guard!($v, 2);
         let var = $v[0].get_sym()?;
-        let incr_val = $v[1].get_value($m)?;
+        let incr_val = $v[1].get_uint($m)?;
         let mut var_idx = $m.var_find(&var)?;
         $a(&mut var_idx, incr_val as isize);
         // also update var_idx of the variable
@@ -66,8 +66,8 @@ pub fn decr(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
 //      allc: size(Value)
 pub fn allc(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     argc_guard!(v, 1);
-    let size = v[0].get_value(&m)? as usize;
-    m.pmem_allc(&vec![0f64; size]);
+    let size = v[0].get_uint(&m)?;
+    m.pmem_allc(&vec![0f64; size as usize]);
     m.mem_set(0, size as f64)?;
     Ok(Signal::None)
 }
