@@ -39,7 +39,7 @@ pub fn lbl(v: &[Tok], _: &mut Mem) -> Result<Signal, Error>{
 // Act as function pointer
 // Allowing changing label during run time to know label locations
 pub fn als(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
-    argc_guard!(v, 1);
+    argc_guard!(v, 2);
     let alias = v[0].get_sym()?;
     let label = v[1].get_sym()?;
     let loc = m.label_find(label)?;

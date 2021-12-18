@@ -1,3 +1,24 @@
-incr: a, 1
-mov: $a, 10
+jmp: main
+
+lbl: add1
+add: [1], 1
+mov: [1], [0]
+jmp: firstReturn
+
+lbl: add2
+add: [1], 2
+mov: [1], [0]
+jmp: secondReturn
+
+
+lbl: main
+
+als: add, add1
+jmp: add
+lbl: firstReturn
+
+als: add, add2
+jmp: add
+lbl: secondReturn
+
 print_num: 1, [1]
