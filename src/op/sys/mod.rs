@@ -11,7 +11,7 @@ const MAX_INPUT: usize = 1024;
 //      exit: exit_code(Value)
 pub fn exit(v: &[Tok], m: &mut Mem) -> Result<Signal, Error> {
     argc_guard!(v, 1);
-    let exit_code = v[0].get_uint(m)?;
+    let exit_code = v[0].get_value(m)?;
     std::process::exit(exit_code as i32);
 }
 
