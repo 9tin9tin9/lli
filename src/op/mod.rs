@@ -18,7 +18,8 @@ impl Signal{
         &self, 
         m: &mut Mem, 
         code: &mut Code, 
-        op_idx_table: &AHashMap<&'static str, usize>
+        op_idx_table: &AHashMap<&'static str, usize>,
+        op_vec: &[OpFunc]
     ) -> Result<(), Error>{
         match *self {
             Signal::None => (),
@@ -38,11 +39,13 @@ impl Signal{
                 m.label_set(alias, loc);
             }
             Signal::Src(ref s) => {
+                let mut src = Code::new();
                 crate::read_from_file(
                     s,
                     m,
-                    code,
+                    &mut src,
                     op_idx_table)?;
+                crate::run(m, &mut src, op_idx_table, op_vec)?;
             }
         };
         code.ptr_incr();

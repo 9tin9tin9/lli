@@ -168,20 +168,13 @@ fn run(
     code: &mut Code, 
     op_idx_table: &AHashMap<&'static str, usize>, 
     op_vec: &[op::OpFunc]
-){
+) -> Result<(), Error>
+{
     while code.ptr() < code.len() {
         // the 2 unwrap_or_else closures have different return value
-        op::exec(op_vec, m, code)
-            .unwrap_or_else(|e| {
-                e.print(ERROR_MSG_LEVEL);
-                std::process::exit(1);
-            })
-            .respond(m, code, op_idx_table)
-            .unwrap_or_else(|e| {
-                e.print(ERROR_MSG_LEVEL);
-                std::process::exit(1);
-            })
+        op::exec(op_vec, m, code)?.respond(m, code, op_idx_table, op_vec)?;
     };
+    Ok(())
 }
 
 fn main() {
@@ -200,5 +193,9 @@ fn main() {
             e.print(ERROR_MSG_LEVEL);
             std::process::exit(1);
     });
-    run(&mut m, &mut code, &op_idx_table, &op_vec);
+    run(&mut m, &mut code, &op_idx_table, &op_vec)
+        .unwrap_or_else(|e| {
+            e.print(ERROR_MSG_LEVEL);
+            std::process::exit(1);
+    });
 }

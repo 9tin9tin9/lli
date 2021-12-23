@@ -1,24 +1,13 @@
-jmp: main
+allc: 10
 
-lbl: add1
+src: b.lli
+
+lbl: startLoop
 add: [1], 1
 mov: [1], [0]
-jmp: firstReturn
+eq: [1], [2]
+jc: [0], endLoop
+jmp: startLoop
 
-lbl: add2
-add: [1], 2
-mov: [1], [0]
-jmp: secondReturn
-
-
-lbl: main
-
-als: add, add1
-jmp: add
-lbl: firstReturn
-
-als: add, add2
-jmp: add
-lbl: secondReturn
-
+lbl: endLoop
 print_num: 1, [1]
