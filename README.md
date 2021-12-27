@@ -88,26 +88,11 @@ src: script_name(Sym)  # execute another file
 ```
 
 ## TODO
-- [x] Implement all the functions listed in Predefined Function Section (Will not implement fork in near future)
-
-- [x] Add comments
-
-- [x] Fix assert\_eq on `error::Error` in tests (solved by using assert\_matches
+- [ ] Implement nested Idx to replace VarIdx, done in lli\_c
 
 - [ ] Write more tests
 
-- [x] Ptr to ptr
-```bash
-var: $A, [10]
-mov: $A, 30
-mov: [$A], 100  # 100 is moved to [30]
-```
-
 - [ ] Create all the string literals during preprocessing??
-
-- [x] Fix error report
-
-- [x] Write Error variants for lex errors to replace String
 
 - [ ] Move argc check to preprocess time
 
