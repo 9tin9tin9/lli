@@ -37,7 +37,7 @@ fn tokenize_strltl(){
 fn tokenize_idx(){
     assert_eq!(
         vec![Tok::Sym(HashIdx::from_str("Aasdasd")), 
-             Tok::Idx(-123), 
+             Tok::Idx(Idx::Num(-123)), 
              Tok::Sym(HashIdx::from_str("casdasd"))],
         tokenize(&"Aasdasd : [-123] ,casdasd ".to_string()).unwrap());
     let r = tokenize(&"A : [asd], cd ".to_string());
@@ -62,14 +62,6 @@ fn tokenize_var(){
              Tok::Var(HashIdx::from_str("123")), 
              Tok::Sym(HashIdx::from_str("casdasd"))],
         tokenize(&"A : $123 , casdasd ".to_string()).unwrap());
-}
-
-#[test]
-fn tokenize_varidx(){
-    assert_eq!(
-        vec![Tok::Sym(HashIdx::from_str("Aasdasd")), 
-             Tok::VarIdx(HashIdx::from_str("casdasd"))],
-        tokenize(&"Aasdasd : [$casdasd] ".to_string()).unwrap());
 }
 
 #[test]
@@ -132,7 +124,7 @@ fn read_value(){
     let t = Tok::Num(10.0);
     let mut m = Mem::new();
     assert_eq!(t.get_value(&m).unwrap(), 10f64);
-    let t = Tok::Idx(1);
+    let t = Tok::Idx(Idx::Num(1));
     m.pmem_set(1, 10.0).unwrap();
     assert_eq!(t.get_value(&m).unwrap(), 10f64);
     let t = Tok::Var(HashIdx::new("A", 0));
@@ -142,7 +134,7 @@ fn read_value(){
 
 #[test]
 fn read_value_invalid_memory_access(){
-    let t = Tok::Idx(-1);
+    let t = Tok::Idx(Idx::Num(-1));
     let m = Mem::new();
     assert_matches!(t.get_value(&m), Err(Error::InvalidMemAccess(-1)));
 }
@@ -160,14 +152,14 @@ fn read_value_wrong_type(){
 
 #[test]
 fn get_loc(){
-    let t = Tok::Idx(100);
+    let t = Tok::Idx(Idx::Num(100));
     let mut m = Mem::new();
     assert_eq!(t.get_loc(&mut m).unwrap(), 100);
     let t = Tok::Var(HashIdx::new("A", 0));
     m.var_add(100);
     assert_eq!(t.get_loc(&mut m).unwrap(), 100);
     m.mem_set(100, 30.0).unwrap();
-    let t = Tok::VarIdx(HashIdx::new("A", 0));
+    let t = Tok::Idx(Idx::Var(HashIdx::new("A", 0)));
     assert_eq!(t.get_loc(&mut m).unwrap(), 30);
     let t = Tok::Ltl("asda".to_string());
     assert_eq!(t.get_loc(&mut m).unwrap(), -1);

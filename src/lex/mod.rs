@@ -23,11 +23,17 @@ impl HashIdx{
 }
 
 #[derive(Clone, PartialEq, Debug)]
+pub enum Idx {
+    Num(isize),
+    Idx(Box<Idx>),
+    Var(HashIdx),
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub enum Tok{
     Num(f64), 
-    Idx(isize), 
+    Idx(Idx), 
     Var(HashIdx),
-    VarIdx(HashIdx),  // Ptr to ptr
     Ltl(String),
     Sym(HashIdx),  // includes label and operator
     Eof,
@@ -37,7 +43,6 @@ impl Tok{
     pub const NUM_STR : &'static str = "Num";
     pub const IDX_STR : &'static str = "Idx";
     pub const VAR_STR : &'static str = "Var";
-    pub const VARIDX_STR : &'static str = "VarIdx";
     pub const LTL_STR : &'static str = "Ltl";
     pub const SYM_STR : &'static str = "Sym";
     pub const EOF_STR : &'static str = "Eof";
@@ -47,7 +52,6 @@ impl Tok{
             Tok::Num(_) => Tok::NUM_STR,
             Tok::Idx(_) => Tok::IDX_STR,
             Tok::Var(_) => Tok::VAR_STR,
-            Tok::VarIdx(_) => Tok::VARIDX_STR,
             Tok::Ltl(_) => Tok::LTL_STR,
             Tok::Sym(_) => Tok::SYM_STR,
             Tok::Eof => Tok::EOF_STR,
@@ -57,14 +61,52 @@ impl Tok{
     pub fn to_str(&self) -> String{
         match self {
             Tok::Num(n) => format!("Num({})", n),
-            Tok::Idx(i) => format!("Idx({})", i),
+            Tok::Idx(i) => format!("Idx({:?})", i),
             Tok::Var(s) => format!("Var({})", s.sym),
-            Tok::VarIdx(s) => format!("VarIdx({})", s.sym),
             Tok::Ltl(s) => format!("Ltl({})", s),
             Tok::Sym(s) => format!("Sym({})", s.sym),
             Tok::Eof => "Eof".to_owned(),
         }
     }
+
+    fn eat_idx(vec: &[u8]) -> Result<Idx, Error> {
+        let len = vec.len();
+        if vec[len-1] != b']' {
+            return Err(Error::UnterminatedIdx)
+        } else if len == 2 {
+            return Err(Error::EmptyIdx)
+        }
+
+        match vec[1] {
+            // Var
+            b'$' => {
+                if len == 3 {
+                    return Err(Error::MissingVarName)
+                }
+                let s = unsafe {
+                    std::str::from_utf8_unchecked(&vec[2..len-1])
+                };
+                return Ok(Idx::Var(HashIdx::new(s, 0)))
+            },
+            // Idx
+            b'[' => {
+                return Ok(Idx::Idx(Box::new(Tok::eat_idx(&vec[1..len-1])?)));
+            },
+            // Num
+            _ => {
+                let s = unsafe { 
+                    std::str::from_utf8_unchecked(&vec[1..len-1]) 
+                };
+                match s.parse::<isize>() {
+                    Ok(i) => {
+                        return Ok(Idx::Num(i));
+                    },
+                    Err(e) => Err(Error::ParseIdxError(e)),
+                }
+            },
+        }
+    }
+
     fn from_u8(vec: &[u8]) -> Result<Tok, Error> {
         let len = vec.len();
         if len == 0 {
@@ -81,33 +123,10 @@ impl Tok{
                     Err(e) => Err(Error::ParseNumError(e)),
                 }
             },
-            // Idx | VarIdx
-            b'[' => 
-                if vec[len-1] != b']' {
-                    Err(Error::UnterminatedIdx)
-                }else if vec.len() == 2 {
-                    Err(Error::EmptyIdx)
-                }else{
-                    // VarIdx
-                    if vec[1] == b'$' {
-                        if vec.len() == 3{
-                            return Err(Error::MissingVarName);
-                        }
-                        let s = unsafe {
-                            std::str::from_utf8_unchecked(&vec[2..len-1])
-                        };
-                        Ok(Tok::VarIdx(HashIdx::from_str(s)))
-                    }else {
-                    // Idx
-                        let s = unsafe { 
-                            std::str::from_utf8_unchecked(&vec[1..len-1]) 
-                        };
-                        match s.parse::<isize>() {
-                            Ok(i) => Ok(Tok::Idx(i)),
-                            Err(e) => Err(Error::ParseIdxError(e)),
-                        }
-                    }
-                },
+            // Idx
+            b'[' => {
+                Ok(Tok::Idx(Tok::eat_idx(&vec)?))
+            },
             // Var
             b'$' => {
                 let s = unsafe { 
@@ -135,18 +154,29 @@ impl Tok{
     pub fn get_value(&self, m: &Mem) -> Result<f64, Error>{
         match self {
             Tok::Num(f) => Ok(*f),
-            Tok::Idx(i) => m.mem_at(*i),
-            Tok::Var(n) => m.mem_at(m.var_find(n)?),
-            Tok::VarIdx(n) => {
-                // can't use 
-                //      m.mem_at(self.get_loc(m)?),
-                //  cuz m will then need to be changed to &mut Mem
-                let value = m.mem_at(m.var_find(n)?)?;
-                if value != value as isize as f64 {
-                    return Err(Error::NotInterger(value))
+            Tok::Idx(ref idx) => {
+                let mut idx = idx;
+                let mut layer: usize = 0;
+                while let Idx::Idx(a) = idx {
+                    idx = a;
+                    layer += 1;
                 }
-                m.mem_at(value as isize)
-            },
+
+                let mut d = match idx {
+                    Idx::Num(n) => m.mem_at(*n)?,
+                    Idx::Var(v) => m.mem_at(m.var_find(v)?)?,
+                    Idx::Idx(_) => 0f64
+                };
+
+                for _ in 0..layer {
+                    if d != d as isize as f64 {
+                        return Err(Error::NotInterger(d));
+                    }
+                    d = m.mem_at(d as isize)?;
+                }
+                Ok(d)
+            }
+            Tok::Var(n) => m.mem_at(m.var_find(n)?),
             _ =>
                 Err(Error::WrongArgType(
                         vec![Tok::NUM_STR, Tok::IDX_STR, Tok::VAR_STR], 
@@ -172,15 +202,31 @@ impl Tok{
 
     pub fn get_loc(&self, m: &mut Mem) -> Result<isize, Error> {
         match self {
-            Tok::Idx(i) => Ok(*i),
-            Tok::Var(n) => m.var_find(n),
-            Tok::VarIdx(n) => {
-                let value = m.mem_at(m.var_find(n)?)?;
-                if value != value as isize as f64 {
-                    return Err(Error::NotInterger(value))
+            Tok::Idx(idx) => {
+                let mut idx = idx;
+                let mut layer: usize = 0;
+                while let Idx::Idx(a) = idx {
+                    idx = a;
+                    layer += 1;
                 }
-                Ok(value as isize)
+
+                let mut l = match idx {
+                    Idx::Num(n) => *n,
+                    Idx::Var(v) => m.var_find(v)?,
+                    Idx::Idx(_) => 0isize
+                };
+
+                for _ in 0..layer {
+                    let mut d = l as f64;
+                    d = m.mem_at(l)?;
+                    if d != d as isize as f64 {
+                        return Err(Error::NotInterger(d));
+                    }
+                    l = d as isize;
+                }
+                Ok(l)
             },
+            Tok::Var(n) => m.var_find(n),
             Tok::Ltl(_) =>
                 self.create_ltl(m),
             _ =>

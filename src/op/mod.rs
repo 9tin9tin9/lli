@@ -83,6 +83,19 @@ macro_rules! add_entry {
     };
 }
 
+#[derive(FromPrimitive)]
+pub enum Opcode {
+    Nop = 0,
+    Mov, Copy, Var, Incr, Decr, Allc,
+    Add, Sub, Mul, Div,
+    Mod, Eq, Ne, Gt, Lt,
+    And, Or, Not,
+    Jmp, Jc, Lbl, Als,
+    Exit, Open, Close, Read, Write,
+    Src,
+    PrintNum,
+}
+
 pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>){
     add_entry!(h, v, nop, nop);
 

@@ -88,7 +88,9 @@ src: script_name(Sym)  # execute another file
 ```
 
 ## TODO
-- [ ] Implement nested Idx to replace VarIdx, done in lli\_c
+- [x] Implement nested Idx to replace VarIdx, done in lli\_c
+
+- [ ] Add loc op to obtain ptr idx value
 
 - [ ] Write more tests
 

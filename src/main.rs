@@ -3,6 +3,7 @@ mod lex;
 mod code;
 mod mem;
 mod op;
+use num_traits::FromPrimitive;
 use std::io::{self, BufRead};
 use std::fs::File;
 use std::env;
@@ -11,6 +12,8 @@ use mem::Mem;
 use code::Code;
 use lex::Tok;
 use error::Error;
+#[macro_use]
+extern crate num_derive;
 // used by tests
 #[macro_use]
 extern crate matches;
@@ -44,9 +47,8 @@ fn create_symbol_table(
     t: &mut Vec<Tok>
 ) -> Result<(), Error>
 {
-    match opcode {
-        // lbl | alias
-        21 | 22 => if let Tok::Sym(ref mut hi) = t[1] {
+    match FromPrimitive::from_usize(opcode).unwrap() {
+        op::Opcode::Lbl | op::Opcode::Als => if let Tok::Sym(ref mut hi) = t[1] {
             hi.idx = match m.label_hash.get(&hi.sym) {
                 Some(i) => *i,
                 None => {
@@ -56,8 +58,7 @@ fn create_symbol_table(
                 },
             };
         },
-        // var
-        3 => if let Tok::Sym(ref mut hi) = t[1] {
+        op::Opcode::Var => if let Tok::Sym(ref mut hi) = t[1] {
             hi.idx = match m.var_hash.get(&hi.sym) {
                 Some(i) => *i,
                 None => {
@@ -88,22 +89,32 @@ fn replace_sym(m: &Mem, c: &mut Code) -> Result<(), Error> {
     for i in 0..c.len() {
         let line = c.at_mut(i).unwrap();
         if let Tok::Sym(ref hi) = line[0] {
-            match hi.idx {
-                // var | lbl
-                3 | 21 => (),
-                // jmp
-                19 => replace_lbl(&mut line[1], m)?,
-                // jc | als
-                20 | 22 => replace_lbl(&mut line[2], m)?,
+            match FromPrimitive::from_usize(hi.idx).unwrap() {
+                op::Opcode::Var | op::Opcode::Lbl => (),
+                op::Opcode::Jmp => replace_lbl(&mut line[1], m)?,
+                op::Opcode::Jc | op::Opcode::Als => replace_lbl(&mut line[2], m)?,
 
                 _ => for a in &mut line[1..] {
                     // Var or VarIdx
-                    if let Tok::Var(ref mut hi) | Tok::VarIdx(ref mut hi) = a {
+                    if let Tok::Var(ref mut hi) = a {
                         hi.idx = match m.var_hash.get(&hi.sym) {
                             Some(i) => *i,
                             None => 
                                 return Err(Error::UndefinedVar(hi.sym.to_owned())),
                         };
+                        continue;
+                    }else if let Tok::Idx(ref mut i) = a {
+                        let mut idx = i;
+                        while let lex::Idx::Idx(b) = idx {
+                            idx = b;
+                        }
+                        if let lex::Idx::Var(v) = idx {
+                            v.idx = match m.var_hash.get(&v.sym) {
+                                Some(c) => *c,
+                                None =>
+                                    return Err(Error::UndefinedVar(v.sym.to_owned())),
+                            }
+                        }
                     }
                 },
             }
