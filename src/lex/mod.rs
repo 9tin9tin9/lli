@@ -164,7 +164,10 @@ impl Tok{
 
                 let mut d = match idx {
                     Idx::Num(n) => m.mem_at(*n)?,
-                    Idx::Var(v) => m.mem_at(m.var_find(v)?)?,
+                    Idx::Var(v) => {
+                        layer += 1;
+                        m.mem_at(m.var_find(v)?)?
+                    },
                     Idx::Idx(_) => 0f64
                 };
 
@@ -202,9 +205,9 @@ impl Tok{
 
     pub fn get_loc(&self, m: &mut Mem) -> Result<isize, Error> {
         match self {
-            Tok::Idx(idx) => {
-                let mut idx = idx;
-                let mut layer: usize = 0;
+            Tok::Idx(i) => {
+                let mut idx = i;
+                let mut layer: isize = 0;
                 while let Idx::Idx(a) = idx {
                     idx = a;
                     layer += 1;
@@ -212,13 +215,18 @@ impl Tok{
 
                 let mut l = match idx {
                     Idx::Num(n) => *n,
-                    Idx::Var(v) => m.var_find(v)?,
+                    Idx::Var(v) => {
+                        let d = m.mem_at(m.var_find(v)?)?;
+                        if d != d as isize as f64 {
+                            return Err(Error::NotInterger(d));
+                        }
+                        d as isize
+                    },
                     Idx::Idx(_) => 0isize
                 };
 
-                for _ in 0..layer {
-                    let mut d = l as f64;
-                    d = m.mem_at(l)?;
+                for _ in 0..layer-1 {
+                    let d = m.mem_at(l)?;
                     if d != d as isize as f64 {
                         return Err(Error::NotInterger(d));
                     }

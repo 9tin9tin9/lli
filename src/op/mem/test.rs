@@ -3,7 +3,7 @@ use crate::mem::Mem;
 
 #[test]
 fn mov(){
-    let v = vec![Tok::Idx(10), Tok::Num(100.0)];
+    let v = vec![Tok::Idx(Idx::Num(10)), Tok::Num(100.0)];
     let mut m = Mem::new();
     super::mov(&v, &mut m).unwrap();
     assert_eq!(
@@ -13,7 +13,7 @@ fn mov(){
 
 #[test]
 fn cpy(){
-    let v = vec![Tok::Idx(1), Tok::Ltl("asdasd".to_string()), Tok::Num(6.0)];
+    let v = vec![Tok::Idx(Idx::Num(1)), Tok::Ltl("asdasd".to_string()), Tok::Num(6.0)];
     let mut m = Mem::new();
     super::cpy(&v, &mut m).unwrap();
     assert_eq!(
@@ -23,7 +23,7 @@ fn cpy(){
 
 #[test]
 fn var(){
-    let v = vec![Tok::Sym(HashIdx::new("A", 0)), Tok::Idx(10)];
+    let v = vec![Tok::Sym(HashIdx::new("A", 0)), Tok::Idx(Idx::Num(10))];
     let mut m = Mem::new();
     m.var_add(10);
     super::var(&v, &mut m).unwrap();

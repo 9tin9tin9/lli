@@ -1,13 +1,7 @@
-allc: 10
+allc: 1000
 
-src: b.lli
+var: a, [10]
+mov: $a, 100
+mov: [$a], 1000
 
-lbl: startLoop
-add: [1], 1
-mov: [1], [0]
-eq: [1], [2]
-jc: [0], endLoop
-jmp: startLoop
-
-lbl: endLoop
-print_num: 1, [1]
+print_num: 1, [100]
