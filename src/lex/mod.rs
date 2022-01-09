@@ -154,9 +154,9 @@ impl Tok{
     pub fn get_value(&self, m: &Mem) -> Result<f64, Error>{
         match self {
             Tok::Num(f) => Ok(*f),
-            Tok::Idx(ref idx) => {
-                let mut idx = idx;
-                let mut layer: usize = 0;
+            Tok::Idx(ref i) => {
+                let mut idx = i;
+                let mut layer = 0usize;
                 while let Idx::Idx(a) = idx {
                     idx = a;
                     layer += 1;
@@ -178,7 +178,7 @@ impl Tok{
                     d = m.mem_at(d as isize)?;
                 }
                 Ok(d)
-            }
+            },
             Tok::Var(n) => m.mem_at(m.var_find(n)?),
             _ =>
                 Err(Error::WrongArgType(

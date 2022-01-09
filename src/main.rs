@@ -52,7 +52,7 @@ fn create_symbol_table(
             hi.idx = match m.label_hash.get(&hi.sym) {
                 Some(i) => *i,
                 None => {
-                    let idx = m.label_add(c.len());
+                    let idx = m.label_add(c.len()+1);
                     m.label_hash.insert(hi.sym.to_owned(), idx);
                     idx
                 },
@@ -90,33 +90,32 @@ fn replace_sym(m: &Mem, c: &mut Code) -> Result<(), Error> {
         let line = c.at_mut(i).unwrap();
         if let Tok::Sym(ref hi) = line[0] {
             match FromPrimitive::from_usize(hi.idx).unwrap() {
-                op::Opcode::Var | op::Opcode::Lbl => (),
                 op::Opcode::Jmp => replace_lbl(&mut line[1], m)?,
                 op::Opcode::Jc | op::Opcode::Als => replace_lbl(&mut line[2], m)?,
-
-                _ => for a in &mut line[1..] {
-                    // Var or VarIdx
-                    if let Tok::Var(ref mut hi) = a {
-                        hi.idx = match m.var_hash.get(&hi.sym) {
-                            Some(i) => *i,
-                            None => 
-                                return Err(Error::UndefinedVar(hi.sym.to_owned())),
-                        };
-                        continue;
-                    }else if let Tok::Idx(ref mut i) = a {
-                        let mut idx = i;
-                        while let lex::Idx::Idx(b) = idx {
-                            idx = b;
-                        }
-                        if let lex::Idx::Var(v) = idx {
-                            v.idx = match m.var_hash.get(&v.sym) {
-                                Some(c) => *c,
-                                None =>
-                                    return Err(Error::UndefinedVar(v.sym.to_owned())),
-                            }
+                _ => ()
+            }
+            for a in &mut line[1..] {
+                // Var or VarIdx
+                if let Tok::Var(ref mut hi) = a {
+                    hi.idx = match m.var_hash.get(&hi.sym) {
+                        Some(i) => *i,
+                        None => 
+                            return Err(Error::UndefinedVar(hi.sym.to_owned())),
+                    };
+                    continue;
+                }else if let Tok::Idx(ref mut i) = a {
+                    let mut idx = i;
+                    while let lex::Idx::Idx(b) = idx {
+                        idx = b;
+                    }
+                    if let lex::Idx::Var(v) = idx {
+                        v.idx = match m.var_hash.get(&v.sym) {
+                            Some(c) => *c,
+                            None =>
+                                return Err(Error::UndefinedVar(v.sym.to_owned())),
                         }
                     }
-                },
+                }
             }
         }
     }

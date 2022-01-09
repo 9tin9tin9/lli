@@ -37,6 +37,15 @@ pub fn var(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     Ok(Signal::None)
 }
 
+// Returns the index of ptr as value
+//      loc: ptr(Ptr)
+pub fn loc(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
+    argc_guard!(v, 1);
+    let idx = v[0].get_loc(m)?;
+    m.mem_set(0, idx as f64)?;
+    Ok(Signal::None)
+}
+
 macro_rules! mut_var_idx {
     ( $v:expr, $m:expr, $a:ident ) => {
         argc_guard!($v, 2);

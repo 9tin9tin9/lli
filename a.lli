@@ -1,7 +1,13 @@
-allc: 1000
+allc: 2
+var: counter, [1]
+var: ?, [0]
 
-var: a, [10]
-mov: $a, 100
-mov: [$a], 1000
+lbl: loopStart
+add: $counter, 1
+mov: $counter, $?
+eq: $counter, 10000000
+jc: $?, exitLoop
+jmp: loopStart
 
-print_num: 1, [100]
+lbl: exitLoop
+print_num: 1, $counter
