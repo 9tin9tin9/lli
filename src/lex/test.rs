@@ -123,6 +123,7 @@ fn tokenize_unexpected(){
 fn read_value(){
     let t = Tok::Num(10.0);
     let mut m = Mem::new();
+    m.pmem_allc(&[0.0]);
     assert_eq!(t.get_value(&m).unwrap(), 10f64);
     let t = Tok::Idx(Idx::Num(1));
     m.pmem_set(1, 10.0).unwrap();
@@ -154,6 +155,7 @@ fn read_value_wrong_type(){
 fn get_loc(){
     let t = Tok::Idx(Idx::Num(100));
     let mut m = Mem::new();
+    m.pmem_allc(&[0.0; 100]);
     assert_eq!(t.get_loc(&mut m).unwrap(), 100);
     let t = Tok::Var(HashIdx::new("A", 0));
     m.var_add(100);

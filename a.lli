@@ -1,13 +1,26 @@
-allc: 2
-var: counter, [1]
-var: ?, [0]
+allc: 3
+var: ptr, [0]
 
-lbl: loopStart
-add: $counter, 1
-mov: $counter, $?
-eq: $counter, 10000000
-jc: $?, exitLoop
-jmp: loopStart
+mov: [1], 1
+mov: [2], 2
+mov: [3], 3
 
-lbl: exitLoop
-print_num: 1, $counter
+incr: $ptr, 1
+print_num: 1, $ptr
+incr: $ptr, 1
+print_num: 1, $ptr
+incr: $ptr, 1
+
+print_num: 1, $ptr
+# var: counter, [1]
+# var: ?, [0]
+# 
+# lbl: loopStart
+# add: $counter, 1
+# mov: $counter, $?
+# eq: $counter, 10000000
+# jc: $?, exitLoop
+# jmp: loopStart
+# 
+# lbl: exitLoop
+# print_num: 1, $counter

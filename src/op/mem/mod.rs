@@ -46,29 +46,22 @@ pub fn loc(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
     Ok(Signal::None)
 }
 
-macro_rules! mut_var_idx {
-    ( $v:expr, $m:expr, $a:ident ) => {
-        argc_guard!($v, 2);
-        let var = $v[0].get_sym()?;
-        let incr_val = $v[1].get_uint($m)?;
-        let mut var_idx = $m.var_find(&var)?;
-        $a(&mut var_idx, incr_val as isize);
-        // also update var_idx of the variable
-        $m.var_set(var.idx, var_idx);
-        return Ok(Signal::None);
-    }
-}
-
 // Used to iterate->read/write pmem, potentially can be used to do stack operations
 //      incr: var(Var), num(Value)
 pub fn incr(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
-    mut_var_idx!(v, m, idx_incr);
-}
-
-// Used to iterate->read/write pmem, potentially can be used to do stack operations
-//      decr: var(Var), num(Value)
-pub fn decr(v: &[Tok], m: &mut Mem) -> Result<Signal, Error>{
-    mut_var_idx!(v, m, idx_decr);
+    argc_guard!(v, 2);
+    if let Tok::Var(var) = &v[0] {
+        let incr_val = v[1].get_int(m)?;
+        let mut var_idx = m.var_find(var)?;
+        idx_incr(&mut var_idx, incr_val as isize);
+        // also update var_idx of the variable
+        m.var_set(var.idx, var_idx);
+        return Ok(Signal::None)
+    }else {
+        return Err(Error::WrongArgType(
+                vec![Tok::VAR_STR],
+                v[0].to_type_str()))
+    }
 }
 
 // Push slots to pmem

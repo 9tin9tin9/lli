@@ -86,7 +86,7 @@ macro_rules! add_entry {
 #[derive(FromPrimitive)]
 pub enum Opcode {
     Nop = 0,
-    Mov, Copy, Var, Loc, Incr, Decr, Allc,
+    Mov, Copy, Var, Loc, Incr, Allc,
     Add, Sub, Mul, Div,
     Mod, Eq, Ne, Gt, Lt,
     And, Or, Not,
@@ -104,7 +104,6 @@ pub fn init_op_table(h: &mut AHashMap<&'static str, usize>, v: &mut Vec<OpFunc>)
     add_entry!(h, v, mem, var);
     add_entry!(h, v, mem, loc);
     add_entry!(h, v, mem, incr);
-    add_entry!(h, v, mem, decr);
     add_entry!(h, v, mem, allc);
 
     add_entry!(h, v, math, add);
